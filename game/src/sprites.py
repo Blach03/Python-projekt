@@ -19,7 +19,7 @@ class SpriteSheet:
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y, start):
 
         self.game = game
         self._layer = PLAYER_LAYER
@@ -31,6 +31,9 @@ class Player(pygame.sprite.Sprite):
         self.width = TILE_SIZE
         self.height = TILE_SIZE
 
+        self.room_x = start[0]
+        self.room_y = start[1]
+
         self.x_change = 0
         self.y_change = 0
 
@@ -41,6 +44,9 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
+
+        self.map_open = False
+        self.map_open_pressed = False
 
     def update(self):
         self.movement()
@@ -66,6 +72,12 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_DOWN]:
             self.y_change += PLAYER_SPEED
             self.facing = 'down'
+        
+        if keys[pygame.K_m] and not self.map_open_pressed:
+            self.map_open_pressed = True
+            self.map_open = not self.map_open
+        elif not keys[pygame.K_m]:
+            self.map_open_pressed = False
 
     def collide_blocks(self, direction):
         hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
