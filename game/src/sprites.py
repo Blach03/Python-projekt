@@ -1,9 +1,6 @@
 import pygame
 from config import *
-import math
 import random
-
-random.seed(101)
 
 
 class SpriteSheet:
@@ -20,29 +17,20 @@ class SpriteSheet:
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, game, position, start):
-
         self.game = game
         self._layer = PLAYER_LAYER
         self.groups = self.game.player_sprite
         pygame.sprite.Sprite.__init__(self, self.groups)
 
         self.x, self.y = position
-        self.width = TILE_SIZE
-        self.height = TILE_SIZE
-
-        self.room_x = start[0]
-        self.room_y = start[1]
-
-        self.x_change = 0
-        self.y_change = 0
-
+        self.width, self.height = TILE_SIZE, TILE_SIZE
+        self.room_x, self.room_y = start
+        self.x_change, self.y_change = 0, 0
         self.facing = 'down'
 
         self.image = self.game.character_sprite_sheet.get_sprite(3, 2, 32, 32)
-
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x, self.rect.y = self.x, self.y
 
         self.map_open = False
         self.map_open_pressed = False
@@ -98,48 +86,37 @@ class Player(pygame.sprite.Sprite):
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
-
         self.game = game
         self._layer = BLOCK_LAYER
         self.groups = self.game.all_sprites, self.game.blocks
-        pygame.sprite.Sprite.__init__(self, self.groups)
+        pygame.sprite.Sprite.__init__(self, *self.groups)
 
-        self.x = x * TILE_SIZE
-        self.y = y * TILE_SIZE
-        self.width = TILE_SIZE
-        self.height = TILE_SIZE
+        self.x, self.y = x * TILE_SIZE, y * TILE_SIZE
+        self.width, self.height = TILE_SIZE, TILE_SIZE
 
         tmp = 16 if random.randint(1, 10) > 8 else 0
         self.image = self.game.blocks_sprite_sheet.get_sprite(tmp, 0, 16, 16)
-
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x, self.rect.y = self.x, self.y
 
 
 class Ground(pygame.sprite.Sprite):
-
     def __init__(self, game, x, y):
         self.game = game
         self._layer = GROUND_LAYER
         self.groups = self.game.all_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
 
-        self.x = x * TILE_SIZE
-        self.y = y * TILE_SIZE
-        self.width = TILE_SIZE
-        self.height = TILE_SIZE
+        self.x, self.y = x * TILE_SIZE, y * TILE_SIZE
+        self.width, self.height = TILE_SIZE, TILE_SIZE
 
         tmp = 48 if random.randint(1, 10) > 8 else 32
         self.image = self.game.blocks_sprite_sheet.get_sprite(tmp, 16, 16, 16)
-
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x, self.rect.y = self.x, self.y
 
 
 class CobWeb(pygame.sprite.Sprite):
-
     def __init__(self, game, x, y):
         self.game = game
         self._layer = PROPS_LAYER
@@ -148,11 +125,8 @@ class CobWeb(pygame.sprite.Sprite):
 
         self.x = (x + random.randint(0, 5) / 10) * TILE_SIZE
         self.y = (y + random.randint(0, 5) / 10) * TILE_SIZE
-        self.width = 16
-        self.height = 16
+        self.width, self.height = 16, 16
 
         self.image = self.game.blocks_sprite_sheet.get_sprite(64, 0, 16, 16, 0.5)
-
         self.rect = self.image.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x, self.rect.y = self.x, self.y

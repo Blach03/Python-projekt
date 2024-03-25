@@ -64,7 +64,7 @@ class Game:
         self.clock.tick(FPS)
         draw_map(self)
 
-        pygame.display.update()
+        pygame.display.flip()
 
     def main(self):
         while self.playing:

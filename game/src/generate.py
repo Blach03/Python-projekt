@@ -1,12 +1,12 @@
 from random import randint, choices
+from tile_data import empty, doorway, corner_options, corner_corners, mid_options, mid_corners
 
 
 def generate_map():
     n = 101
     map = [[0] * n for _ in range(n)]
 
-    a = randint(0, 3)
-    b = randint(0, 3)
+    a, b = randint(0, 3), randint(0, 3)
     weights = [15, 15, 15, 15]
     weights[a] += 25
     weights[b] += 15
@@ -18,8 +18,7 @@ def generate_map():
     for i in range(50):
         for el in neigh:
             if map[curr_location[0] + el[0]][curr_location[1] + el[1]] == 0:
-                x = randint(0, 3)
-                if x == 0:
+                if randint(0, 3) == 0:
                     map[curr_location[0] + el[0]][curr_location[1] + el[1]] = 1
         x = choices([0, 1, 2, 3], weights)[0]
         curr_location = [curr_location[0] + neigh[x][0], curr_location[1] + neigh[x][1]]
@@ -28,170 +27,49 @@ def generate_map():
     map[curr_location[0]][curr_location[1]] = 2
     map[50][50] = 3
 
-    def remove_unnecessary_rows_columns(map):
+    def remove_unnecessary_rows_columns():
         rows_to_keep = [i for i, row in enumerate(map) if any(row)]
         cols_to_keep = [j for j in range(len(map[0])) if any(map[i][j] for i in rows_to_keep)]
-
         new_map = [[map[i][j] for j in cols_to_keep] for i in rows_to_keep]
-
         return new_map
 
-    map = remove_unnecessary_rows_columns(map)
+    map = remove_unnecessary_rows_columns()
 
-    end = 0
-    start = 0
-    a = len(map)
-    b = len(map[0])
+    end, start = 0, 0
+    a, b = len(map), len(map[0])
     for i in range(a):
         for j in range(b):
             if map[i][j] == 2:
-                end = [i, j]
+                end = (i, j)
             if map[i][j] == 3:
-                start = [i, j]
+                start = (i, j)
 
     return map, start, end
 
 
 def generate_rooms(map):
-    tile = [
-        'BBBBBBBBBBBBBBBBBBBB',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'B..................B',
-        'BBBBBBBBBBBBBBBBBBBB',
-    ]
-    n = len(map)
-    m = len(map[0])
+    n, m = len(map), len(map[0])
     rooms = [[0] * m for _ in range(n)]
     for i in range(n):
         for j in range(m):
             if map[i][j] >= 1:
-                tilemap = tile.copy()
+                tile = empty.copy()
                 if map[i][j - 1] >= 1:
                     for k in range(6, 9):
-                        row = list(tilemap[k])
-                        row[0] = "."
-                        tilemap[k] = ''.join(row)
+                        tile[k] = "." + tile[k][1:]
                 if map[i - 1][j] >= 1:
-                    row = list(tilemap[0])
-                    for k in range(8, 12):
-                        row[k] = "."
-                    tilemap[0] = ''.join(row)
-                if i + 1 < n:
-                    if map[i + 1][j] >= 1:
-                        row = list(tilemap[-1])
-                        for k in range(8, 12):
-                            row[k] = "."
-                        tilemap[-1] = ''.join(row)
-                if j + 1 < m:
-                    if map[i][j + 1] >= 1:
-                        for k in range(6, 9):
-                            row = list(tilemap[k])
-                            row[-1] = "."
-                            tilemap[k] = ''.join(row)
-                tilemap = generate_room(tilemap)
-                rooms[i][j] = tilemap
+                    tile[0] = doorway
+                if i + 1 < n and map[i + 1][j] >= 1:
+                    tile[-1] = doorway
+                if j + 1 < m and map[i][j + 1] >= 1:
+                    for k in range(6, 9):
+                        tile[k] = tile[k][:-1] + "."
+                tile = generate_room(tile)
+                rooms[i][j] = tile
     return rooms
 
 
 def generate_room(room):
-    from random import randint
-    a1 = [".....",
-          "....B",
-          "....B",
-          "....B",
-          ".BBBB"]  # 5x5
-    a2 = ["...B.",
-          "...B.",
-          "...BB",
-          ".BBB.",
-          "..B.."]  # 5x5
-    a3 = [".....",
-          "..B..",
-          "BBBBB",
-          "....B",
-          "....B"]  # 5x5
-    a4 = ["...B.",
-          "...BB",
-          "....B",
-          "BB...",
-          ".BB.."]
-    b1 = [".....",
-          "B....",
-          "B....",
-          "B....",
-          "BBBB."]  # 5x5
-    b2 = [".B...",
-          ".B...",
-          "BB...",
-          ".BBB.",
-          "..B.."]  # 5x5
-    b3 = [".....",
-          "..B..",
-          "BBBBB",
-          "B....",
-          "B...."]  # 5x5
-    b4 = [".B...",
-          "BB...",
-          "B....",
-          "...BB",
-          "..BB."]
-    c1 = [".BBBB",
-          "....B",
-          "....B",
-          "....B",
-          "....."]  # 5x5
-    c2 = [".B...",
-          ".BBB.",
-          "...BB",
-          "...B.",
-          "...B."]  # 5x5
-    c3 = ["....B",
-          "....B",
-          "BBBBB",
-          "..B..",
-          "....."]  # 5x5
-    c4 = [".BB..",
-          "BB...",
-          "....B",
-          "...BB",
-          "...B."]
-    d1 = ["BBBB.",
-          "B....",
-          "B....",
-          "B....",
-          "....."]  # 5x5
-    d2 = [".B...",
-          ".BBB.",
-          "BB...",
-          ".B...",
-          ".B..."]  # 5x5
-    d3 = ["B....",
-          "B....",
-          "BBBBB",
-          "..B..",
-          "....."]  # 5x5
-    d4 = ["..BB.",
-          "...BB",
-          "B....",
-          "BB...",
-          ".B..."]
-    corner1 = [a1, a2, a3, a4]
-    corner2 = [c1, c2, c3, c4]
-    corner3 = [b1, b2, b3, b4]
-    corner4 = [d1, d2, d3, d4]
-    options = [corner1, corner2, corner3, corner4]
-    corners = [(1, 1), (1, 9), (14, 1), (14, 9)]
 
     def add_shape(j_length, k_length):
         for j in range(j_length):
@@ -202,54 +80,14 @@ def generate_room(room):
 
     for i in range(4):
         x = randint(0, 3)
-
-        shape = options[i][x]
-        coords = corners[i]
+        shape = corner_options[i][x]
+        coords = corner_corners[i]
         add_shape(5, 5)
 
-    e1 = ["....",
-          "....",
-          "BBBB",
-          "....",
-          "...."]  # 4x5
-    e2 = ["....",
-          "B..B",
-          "BBBB",
-          "B..B",
-          "...."]  # 4x5
-    e3 = ["....",
-          "....",
-          ".BB.",
-          "....",
-          "...."]  # 4x5
-    e4 = ["....",
-          "B..B",
-          "B..B",
-          "B..B",
-          "...."]
-    f1 = [".....",
-          ".BBB.",
-          "....."]
-    f2 = [".....",
-          "..B..",
-          "....."]  # 5x3
-    f3 = [".....",
-          ".....",
-          "....."]
-    mid1 = [e1, e2, e3, e4]
-    mid2 = [f1, f2, f3]
-    options = [mid1, mid2]
-    corners = [(8, 1), (14, 6), (8, 9), (1, 6)]
     for i in range(4):
-        if i % 2 == 0:
-            x = randint(0, 3)
-        else:
-            x = randint(0, 2)
+        x = randint(0, 3) if i % 2 == 0 else randint(0, 2)
+        shape = mid_options[i % 2][x]
+        coords = mid_corners[i]
+        add_shape(5, 4) if i % 2 == 0 else add_shape(3, 5)
 
-        shape = options[i % 2][x]
-        coords = corners[i]
-        if i % 2 == 0:
-            add_shape(5, 4)
-        else:
-            add_shape(3, 5)
     return room

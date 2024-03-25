@@ -1,5 +1,4 @@
 from map import update_map
-from config import *
 from sprites import *
 
 
