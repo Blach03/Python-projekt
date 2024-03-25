@@ -19,15 +19,14 @@ class SpriteSheet:
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, start):
+    def __init__(self, game, position, start):
 
         self.game = game
         self._layer = PLAYER_LAYER
-        self.groups = self.game.all_sprites
+        self.groups = self.game.player_sprite
         pygame.sprite.Sprite.__init__(self, self.groups)
 
-        self.x = x * TILE_SIZE
-        self.y = y * TILE_SIZE
+        self.x, self.y = position
         self.width = TILE_SIZE
         self.height = TILE_SIZE
 
@@ -92,6 +91,9 @@ class Player(pygame.sprite.Sprite):
                     self.rect.y = hits[0].rect.top - self.rect.height
                 if self.y_change < 0:
                     self.rect.y = hits[0].rect.bottom
+
+    def get_room(self):
+        return self.room_x, self.room_y
 
 
 class Block(pygame.sprite.Sprite):
