@@ -1,7 +1,10 @@
 import sys
-import pygame
 from sprites import *
 from config import *
+from generate import *
+
+from map import update_map, draw_map
+from tile_builder import build_tile, tile_to_change
 
 
 class Game:
@@ -13,29 +16,34 @@ class Game:
 
         self.character_sprite_sheet = SpriteSheet('../resources/character.png')
         self.blocks_sprite_sheet = SpriteSheet('../resources/blocks.png')
+        self.overlay_image = None
 
-    def create_tilemap(self):
-        for i, row in enumerate(tilemap):
-            for j, object in enumerate(row):
-                if random.randint(1, 10) > 9:
-                    CobWeb(self, j, i)
-                if object == '.':
-                    Ground(self, j, i)
-                elif object == 'B':
-                    Block(self, j, i)
-                elif object == 'P':
-                    Ground(self, j, i)
-                    Player(self, j, i)
+        self.player = None
+        self.playing = False
+        self.all_sprites = None
+        self.blocks = None
+        self.enemies = None
+        self.attacks = None
+        self.player_sprite = None
+
+        self.map, self.start, self.end = None, None, None
+        self.rooms = None
 
     def new(self):
         self.playing = True
-
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.blocks = pygame.sprite.LayeredUpdates()
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
+        self.player_sprite = pygame.sprite.LayeredUpdates()
 
-        self.create_tilemap()
+        self.map, self.start, self.end = generate_map()
+        self.rooms = generate_rooms(self.map)
+
+        self.player = Player(self, (9.5 * TILE_SIZE, 7 * TILE_SIZE), self.start)
+        build_tile(self, self.rooms[self.start[0]][self.start[1]])
+
+        update_map(self, self.start, self.start)
 
     def events(self):
         for event in pygame.event.get():
@@ -44,14 +52,19 @@ class Game:
                 self.running = False
                 break
 
+        tile_to_change(self)
+
     def update(self):
+        self.player_sprite.update()
         self.all_sprites.update()
 
     def draw(self):
-        self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
+        self.player_sprite.draw(self.screen)
         self.clock.tick(FPS)
-        pygame.display.update()
+        draw_map(self)
+
+        pygame.display.flip()
 
     def main(self):
         while self.playing:
@@ -71,6 +84,7 @@ class Game:
 game = Game()
 game.intro_screen()
 game.new()
+
 while game.running:
     game.main()
     game.game_over()
