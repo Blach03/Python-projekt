@@ -35,6 +35,17 @@ class Player(pygame.sprite.Sprite):
         self.map_open = False
         self.map_open_pressed = False
 
+        self.info_open = False
+        self.info_open_pressed = False
+
+        self.attack = 10  
+        self.hp = 100     
+        self.defense = 5  
+        self.range = 0.5
+        self.attack_speed = 1
+
+        self.inventory = []  
+
     def update(self):
         self.movement()
 
@@ -65,6 +76,12 @@ class Player(pygame.sprite.Sprite):
             self.map_open = not self.map_open
         elif not keys[pygame.K_m]:
             self.map_open_pressed = False
+
+        if keys[pygame.K_TAB] and not self.info_open_pressed:
+            self.info_open_pressed = True
+            self.info_open = not self.info_open
+        elif not keys[pygame.K_TAB]:
+            self.info_open_pressed = False
 
     def collide_blocks(self, direction):
         hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
