@@ -1,10 +1,11 @@
 import sys
-from sprites import *
-from config import *
-from generate import *
+import pygame
 
-from map import update_map, draw_map
+from config import *
+from sprites import SpriteSheet, Player, Button
+from generate import generate_map, generate_rooms
 from tile_builder import build_tile, tile_to_change
+from map import update_map, draw_map
 
 
 class Game:
@@ -13,7 +14,10 @@ class Game:
         self.screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.running = True
+        self.font = pygame.font.Font('../resources/chiller.ttf', 80)
 
+        self.intro_background = pygame.transform.scale(
+            pygame.image.load('../resources/intro_background.jpg'), (1440, 720))
         self.character_sprite_sheet = SpriteSheet('../resources/character.png')
         self.blocks_sprite_sheet = SpriteSheet('../resources/blocks.png')
         self.overlay_image = None
@@ -78,7 +82,25 @@ class Game:
         pass
 
     def intro_screen(self):
-        pass
+        intro = True
+        title = self.font.render('Dungeon Adventure', True, MID_RED)
+        title_rect = title.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT*0.42))
+        play_button = Button((WIN_WIDTH/2, WIN_HEIGHT*0.58), (120, 60), BLACK, MID_RED, 'Play', 40)
+        while intro:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    intro = False
+                    self.running = False
+                    break
+
+            if play_button.is_pressed(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]):
+                intro = False
+
+            self.screen.blit(self.intro_background, (-240, 0))
+            self.screen.blit(title, title_rect)
+            self.screen.blit(play_button.image, play_button.rect)
+            self.clock.tick(60)
+            pygame.display.update()
 
 
 game = Game()

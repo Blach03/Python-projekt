@@ -27,6 +27,22 @@ class Player(pygame.sprite.Sprite):
         self.room_x, self.room_y = start
         self.x_change, self.y_change = 0, 0
         self.facing = 'down'
+        self.animation_loop = 1
+
+        self.animation_positions = {
+            'up': [self.game.character_sprite_sheet.get_sprite(3, 34, 32, 32),
+                   self.game.character_sprite_sheet.get_sprite(35, 34, 32, 32),
+                   self.game.character_sprite_sheet.get_sprite(68, 34, 32, 32)],
+            'down': [self.game.character_sprite_sheet.get_sprite(3, 2, 32, 32),
+                     self.game.character_sprite_sheet.get_sprite(35, 2, 32, 32),
+                     self.game.character_sprite_sheet.get_sprite(68, 2, 32, 32)],
+            'right': [self.game.character_sprite_sheet.get_sprite(3, 66, 32, 32),
+                      self.game.character_sprite_sheet.get_sprite(35, 66, 32, 32),
+                      self.game.character_sprite_sheet.get_sprite(68, 66, 32, 32)],
+            'left': [self.game.character_sprite_sheet.get_sprite(3, 98, 32, 32),
+                     self.game.character_sprite_sheet.get_sprite(35, 98, 32, 32),
+                     self.game.character_sprite_sheet.get_sprite(68, 98, 32, 32)]
+        }
 
         self.image = self.game.character_sprite_sheet.get_sprite(3, 2, 32, 32)
         self.rect = self.image.get_rect()
@@ -37,6 +53,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.movement()
+        self.animate()
 
         self.rect.x += self.x_change
         self.collide_blocks('x')
@@ -59,7 +76,7 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_DOWN]:
             self.y_change += PLAYER_SPEED
             self.facing = 'down'
-        
+
         if keys[pygame.K_m] and not self.map_open_pressed:
             self.map_open_pressed = True
             self.map_open = not self.map_open
@@ -82,6 +99,15 @@ class Player(pygame.sprite.Sprite):
 
     def get_room(self):
         return self.room_x, self.room_y
+
+    def animate(self):
+        if self.x_change == 0 and self.y_change == 0:
+            self.image = self.animation_positions.get(self.facing)[0]
+        else:
+            self.image = self.animation_positions.get(self.facing)[int(self.animation_loop)]
+            self.animation_loop += 0.1
+            if self.animation_loop >= 3:
+                self.animation_loop = 1
 
 
 class Block(pygame.sprite.Sprite):
@@ -130,3 +156,18 @@ class CobWeb(pygame.sprite.Sprite):
         self.image = self.game.blocks_sprite_sheet.get_sprite(64, 0, 16, 16, 0.5)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.x, self.y
+
+
+class Button:
+    def __init__(self, center, size, fg, bg, content, fontsize):
+        font = pygame.font.Font('../resources/chiller.ttf', fontsize)
+        text = font.render(content, True, fg)
+        text_rect = text.get_rect(center=(size[0] / 2, size[1] / 2))
+
+        self.image = pygame.Surface(size)
+        self.image.fill(bg)
+        self.rect = self.image.get_rect(center=center)
+        self.image.blit(text, text_rect)
+
+    def is_pressed(self, pos, pressed):
+        return self.rect.collidepoint(pos) and pressed
