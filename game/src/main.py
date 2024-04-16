@@ -3,6 +3,7 @@ from sprites import *
 from config import *
 from generate import *
 from player_info import *
+from items import *
 
 from map import update_map, draw_map
 from tile_builder import build_tile, tile_to_change
@@ -52,6 +53,7 @@ class Game:
                 self.playing = False
                 self.running = False
                 break
+            
 
         tile_to_change(self)
 
@@ -65,6 +67,7 @@ class Game:
         self.clock.tick(FPS)
         draw_map(self)
         display_player_info(self)
+        display_item_information(self)
 
         pygame.display.flip()
 

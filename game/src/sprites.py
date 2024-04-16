@@ -1,6 +1,8 @@
 import pygame
 from config import *
 import random
+from items import *
+from player_info import *
 
 
 class SpriteSheet:
@@ -38,13 +40,18 @@ class Player(pygame.sprite.Sprite):
         self.info_open = False
         self.info_open_pressed = False
 
+        self.item_open = False
+        self.item_open_pressed = False
+
+        self.clicked_slot = None
+
         self.attack = 10  
         self.hp = 100     
         self.defense = 5  
         self.range = 0.5
         self.attack_speed = 1
 
-        self.inventory = []  
+        self.inventory = [Item("Shield", "doing some stuff", 'shield.png', defense=20, HP=100), Item("Sword", "somethin", 'sword.png', attack=20, HP=10)]  
 
     def update(self):
         self.movement()
@@ -82,6 +89,17 @@ class Player(pygame.sprite.Sprite):
             self.info_open = not self.info_open
         elif not keys[pygame.K_TAB]:
             self.info_open_pressed = False
+        
+        mouse_buttons = pygame.mouse.get_pressed()
+        if mouse_buttons[0]:
+            mouse_pos = pygame.mouse.get_pos()
+            self.clicked_slot = self.get_clicked_inventory_slot(mouse_pos)
+            if self.clicked_slot is not None:
+                if not self.item_open_pressed:
+                    self.item_open_pressed = True
+                    self.item_open = not self.item_open
+        else:
+            self.item_open_pressed = False
 
     def collide_blocks(self, direction):
         hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
@@ -99,6 +117,18 @@ class Player(pygame.sprite.Sprite):
 
     def get_room(self):
         return self.room_x, self.room_y
+    
+    def get_clicked_inventory_slot(self, mouse_pos):
+        x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
+        for item_index, item in enumerate(self.inventory):
+            item_row = item_index // GRID_WIDTH
+            item_col = item_index % GRID_WIDTH
+            item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
+            item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
+            
+            if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
+                return item_index
+        return None
 
 
 class Block(pygame.sprite.Sprite):

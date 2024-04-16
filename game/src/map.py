@@ -4,6 +4,7 @@ from PIL import Image
 from config import WIN_WIDTH, WIN_HEIGHT, YELLOW
 import pygame
 
+
 __image_pos = 0
 plt.figure(facecolor='yellow')
 plt.axis('off')
