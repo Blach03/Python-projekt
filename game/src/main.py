@@ -17,6 +17,7 @@ class Game:
 
         self.character_sprite_sheet = SpriteSheet('../resources/character.png')
         self.blocks_sprite_sheet = SpriteSheet('../resources/blocks.png')
+        self.bullets_sprite_sheet = SpriteSheet('../resources/bullets.png')
         self.overlay_image = None
 
         self.dark_overlay = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA)
@@ -65,7 +66,7 @@ class Game:
     def draw(self):
         self.all_sprites.draw(self.screen)
         self.player_sprite.draw(self.screen)
-        self.screen.blit(self.dark_overlay, (0, 0))
+        # self.screen.blit(self.dark_overlay, (0, 0))
         self.clock.tick(FPS)
         draw_map(self)
 

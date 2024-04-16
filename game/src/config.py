@@ -11,5 +11,6 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 MID_RED = (150, 0, 0)
+RED = (255, 0 , 0)
 
 PLAYER_SPEED = 4
