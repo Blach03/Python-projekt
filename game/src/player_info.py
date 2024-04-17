@@ -34,7 +34,7 @@ def display_player_info(game):
         player_info_surface.blit(text, (20, y_offset))
         y_offset += 35
         
-        draw_segment_bar(player_info_surface, (20, y_offset), min(1, game.player.attack / 100))
+        draw_segment_bar(player_info_surface, (20, y_offset), min(1, game.player.attack / 200))
         y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
         
         text = font.render("HP: {}".format(game.player.hp), True, (0, 0, 0))
@@ -66,7 +66,13 @@ def display_player_info(game):
         draw_segment_bar(player_info_surface, (320, y_offset), min(1, game.player.range / 3))
         y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
 
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING + 35
+        text = font.render("Movement Speed: {}".format(game.player.movement_speed), True, (0, 0, 0))
+        player_info_surface.blit(text, (320, y_offset))
+        y_offset += 35
+
+        draw_segment_bar(player_info_surface, (320, y_offset), min(1, game.player.movement_speed / 8))
+        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
+
 
         text = font.render("Inventory:", True, (0, 0, 0))
         player_info_surface.blit(text, (10, y_offset))
@@ -131,11 +137,19 @@ def display_item_information(game):
         if item_slot is not None:
             item = game.player.inventory[item_slot]
 
-            font = pygame.font.Font(None, 24)
+            font = pygame.font.Font(None, 32)
 
-            name_text = font.render(f"Name: {item.name}", True, (0, 0, 0))
-            attributes_text = [font.render(f"{attribute}: {value}", True, (0, 0, 0)) for attribute, value in item.attributes.items()]
-            description_text = font.render(f"Description: {item.description}", True, (0, 0, 0))
+            name_text = font.render(f"{item.name}", True, (0, 0, 0))
+            font = pygame.font.Font(None, 24)
+            attributes_text = [
+                font.render(f"{attribute}: {getattr(item, attribute)}", True, (0, 0, 0))
+                for attribute in ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
+                if getattr(item, attribute) != 0
+            ]
+            
+            description_lines = item.description.split('\n')
+            description_text = font.render("Description:", True, (0, 0, 0))
+
 
             item_image = pygame.image.load(item.image)
             item_image = pygame.transform.scale(item_image, (100, 100))
@@ -158,9 +172,17 @@ def display_item_information(game):
                 rounded_surface.blit(text, (10, y_offset))
                 y_offset += text.get_height()
 
-            y_offset += 30
+            y_offset = max(y_offset, 100)
 
             rounded_surface.blit(description_text, (10, y_offset + 10))
+
+            y_offset += 30
+
+            for line in description_lines:
+                text_surface = font.render(line, True, (0, 0, 0))
+                rounded_surface.blit(text_surface, (10, y_offset))
+                y_offset += text_surface.get_height()
+
 
             rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
 
@@ -168,3 +190,28 @@ def display_item_information(game):
 
             screen.blit(rounded_surface, rounded_surface_rect)
             
+def display_gold_hp(game):
+    current_hp = game.player.current_hp
+    hp = game.player.hp
+    gold = game.player.gold
+
+    hp_percentage = min(current_hp / hp, 1.0)
+
+    font = pygame.font.Font(None, 24)
+
+    hp_text = font.render(f"HP: {current_hp}/{hp}", True, (255, 255, 255))
+    gold_text = font.render(f"Gold: {gold}", True, (255, 255, 255))
+
+    health_bar_width = int(200 * hp_percentage)
+
+    health_bar_surface = pygame.Surface((200, 20),  pygame.SRCALPHA)
+    health_bar_surface.fill((255, 0, 0, 200))
+    pygame.draw.rect(health_bar_surface, (0, 255, 0, 200), (0, 0, health_bar_width, 20))
+
+    info_surface = pygame.Surface((220, 80),  pygame.SRCALPHA)
+    info_surface.fill((40, 40, 40, 200))
+    info_surface.blit(hp_text, (10, 10))
+    info_surface.blit(gold_text, (10, 60))
+    info_surface.blit(health_bar_surface, (10, 30))
+
+    game.screen.blit(info_surface, (0, 0))

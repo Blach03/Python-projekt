@@ -1,8 +1,10 @@
 import pygame
 from config import *
 import random
-from items import *
+from items import Item
 from player_info import *
+from items import all_items
+import math
 
 
 class SpriteSheet:
@@ -45,13 +47,18 @@ class Player(pygame.sprite.Sprite):
 
         self.clicked_slot = None
 
-        self.attack = 10  
+        self.attack = 20  
         self.hp = 100     
         self.defense = 5  
         self.range = 0.5
         self.attack_speed = 1
+        self.movement_speed = 4
 
-        self.inventory = [Item("Shield", "doing some stuff", 'shield.png', defense=20, HP=100), Item("Sword", "somethin", 'sword.png', attack=20, HP=10)]  
+        self.current_hp = 100
+        
+        self.gold = 100000 #for testing
+
+        self.inventory = []
 
     def update(self):
         self.movement()
@@ -66,16 +73,16 @@ class Player(pygame.sprite.Sprite):
     def movement(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            self.x_change -= PLAYER_SPEED
+            self.x_change -= self.movement_speed
             self.facing = 'left'
         if keys[pygame.K_RIGHT]:
-            self.x_change += PLAYER_SPEED
+            self.x_change += self.movement_speed
             self.facing = 'right'
         if keys[pygame.K_UP]:
-            self.y_change -= PLAYER_SPEED
+            self.y_change -= self.movement_speed
             self.facing = 'up'
         if keys[pygame.K_DOWN]:
-            self.y_change += PLAYER_SPEED
+            self.y_change += self.movement_speed
             self.facing = 'down'
         
         if keys[pygame.K_m] and not self.map_open_pressed:
@@ -177,3 +184,48 @@ class CobWeb(pygame.sprite.Sprite):
         self.image = self.game.blocks_sprite_sheet.get_sprite(64, 0, 16, 16, 0.5)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.x, self.y
+
+
+class ShopItem(pygame.sprite.Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self._layer = BLOCK_LAYER
+        self.groups = self.game.all_sprites, self.game.blocks
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
+        self.x, self.y = x * TILE_SIZE, y * TILE_SIZE
+        self.width, self.height = TILE_SIZE, TILE_SIZE
+
+        n = len(all_items)
+        x = random.randint(0, n-1)
+        self.item = all_items[x]
+
+        background_image = self.game.blocks_sprite_sheet.get_sprite(0, 0, 16, 16)
+
+        shield_image = pygame.image.load(self.item.image)
+        shield_image = pygame.transform.scale(shield_image, (TILE_SIZE, TILE_SIZE))
+
+        combined_image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+        combined_image.blit(background_image, (0, 0))
+        combined_image.blit(shield_image, (0, 0))
+
+        self.image = combined_image
+
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = self.x, self.y
+
+    def is_player_near(self, player):
+        distance = math.sqrt((player.rect.centerx - self.rect.centerx)**2 + (player.rect.centery - self.rect.centery)**2)
+        
+        return distance <= 70
+    
+    def purchase_item(self, player):
+        if player.gold >= self.item.price:
+            player.gold -= self.item.price
+
+            new_block = Block(self.game, self.x // TILE_SIZE, self.y // TILE_SIZE)
+
+            self.kill()
+
+            self.game.all_sprites.add(new_block)
+            self.game.blocks.add(new_block)
