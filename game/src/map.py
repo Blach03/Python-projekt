@@ -4,6 +4,8 @@ from PIL import Image
 from config import WIN_WIDTH, WIN_HEIGHT, YELLOW
 import pygame
 
+TILE_SIZE = 32
+BORDER_SIZE = 8
 
 __image_pos = 0
 plt.figure(facecolor='yellow')
@@ -33,4 +35,43 @@ def update_map(game, before, after):
 
 def draw_map(game):
     if game.player.map_open:
-        game.screen.blit(game.overlay_image, __image_pos)
+        game.screen.blit(combine_images(game.map), __image_pos)
+
+
+image_paths = {
+    0: "../resources/empty_icon.png",
+    1: "../resources/room_icon.png",
+    1.2: "../resources/shop_icon.png",
+    2: "../resources/boss_icon.png",
+    3: "../resources/player_icon.png"
+}
+
+
+images = {}
+for value, path in image_paths.items():
+    image = pygame.image.load(path)
+    images[value] = pygame.transform.scale(image, (TILE_SIZE, TILE_SIZE))
+
+def combine_images(matrix):
+    rows = len(matrix)
+    cols = len(matrix[0])
+
+    combined_width = cols * TILE_SIZE + 2 * BORDER_SIZE
+    combined_height = rows * TILE_SIZE + 2 * BORDER_SIZE
+    combined_surface = pygame.Surface((combined_width, combined_height)).convert_alpha()
+
+    background_color = (255, 255, 255, 0)
+    combined_surface.fill(background_color)
+
+    for y, row in enumerate(matrix):
+        for x, value in enumerate(row):
+            image = images.get(value)
+            if image:
+                combined_surface.blit(image, (x * TILE_SIZE + BORDER_SIZE, y * TILE_SIZE + BORDER_SIZE))
+
+    border_color = (81, 81, 81)
+    pygame.draw.rect(combined_surface, border_color, combined_surface.get_rect(), BORDER_SIZE)
+
+    return combined_surface
+
+#add map resizing and image pos

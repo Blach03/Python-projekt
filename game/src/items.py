@@ -110,7 +110,7 @@ def add_stats(player, item):
 
 
 all_items = [Item("Sentinel Aegis", "Prevents first incoming \nstrike in every room", 1500, '../resources/shield.png', defense=10, hp=30), 
-             Item("Sword", "somethin", 1000, 'sword.png', attack=10, hp=10, attack_speed = 0.2),
+             Item("Sword", "somethin", 1000, '../resources/sword.png', attack=10, hp=10, attack_speed = 0.2),
              Item("Thornforge Armor", "Damages enemies for 20% damage \ndealt to you", 2000, '../resources/thornforge.png', defense=15, movement_speed = -1),
              Item("Wings", "Allows flying over terrain", 5000, '../resources/wings.png', movement_speed = 1), #might be hard to implement
              Item("Soulthirster Blade", "Heals for 5% of damage dealt", 2500, '../resources/soulthirster.png', attack=20),
