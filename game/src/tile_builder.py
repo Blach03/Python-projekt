@@ -5,12 +5,14 @@ from sprites import *
 def build_tile(game, tile):
     for i, row in enumerate(tile):
         for j, elem in enumerate(row):
-            if random.randint(1, 10) > 9:
+            if random.randint(1, 10) > 9 and elem != 'I':
                 CobWeb(game, j, i)
             if elem == '.':
                 Ground(game, j, i)
             elif elem == 'B' or elem == 'P':
                 Block(game, j, i)
+            elif elem == 'I':
+                ShopItem(game, j, i)
 
 
 def tile_to_change(game):

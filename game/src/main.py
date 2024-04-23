@@ -2,6 +2,9 @@ import sys
 from sprites import *
 from config import *
 from generate import *
+from player_info import *
+from items import *
+
 
 from map import update_map, draw_map
 from tile_builder import build_tile, tile_to_change
@@ -51,6 +54,7 @@ class Game:
                 self.playing = False
                 self.running = False
                 break
+            
 
         tile_to_change(self)
 
@@ -63,8 +67,21 @@ class Game:
         self.player_sprite.draw(self.screen)
         self.clock.tick(FPS)
         draw_map(self)
+        display_player_info(self)
+        display_item_information(self)
+        display_gold_hp(self)
+        shop_item = self.player_near_shop_item()
+        if shop_item != None:
+            display_shop_item(self, shop_item)
 
         pygame.display.flip()
+
+    def player_near_shop_item(self):
+        for shop_item in self.all_sprites:
+            if isinstance(shop_item, ShopItem) and shop_item.is_player_near(self.player):
+                return shop_item
+        return None
+
 
     def main(self):
         while self.playing:
