@@ -1,23 +1,26 @@
 from map import update_map
-from sprites import *
+from src.sprites.blocks import Wall, Ground, CobWeb
+import random
+from config import *
 
 
 def build_tile(game, tile):
     for i, row in enumerate(tile):
         for j, elem in enumerate(row):
-            if random.randint(1, 10) > 9:
-                CobWeb(game, j, i)
             if elem == '.':
                 Ground(game, j, i)
             elif elem == 'B' or elem == 'P':
-                Block(game, j, i)
+                Wall(game, j, i)
+            if random.randint(1, 10) > 9:
+                CobWeb(game, j, i)
 
 
 def tile_to_change(game):
 
     def change_tile(tile_before, room_x, room_y, x, y):
-        game.all_sprites.empty()
-        game.blocks.empty()
+        game.ground.empty()
+        game.walls.empty()
+        game.attacks.empty()
         game.player.room_x += room_x
         game.player.room_y += room_y
         after = game.player.get_room()
