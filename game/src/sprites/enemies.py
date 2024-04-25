@@ -19,7 +19,7 @@ class Enemy(pygame.sprite.Sprite):
         self.health = self.start_health
         self.facing = 'right'
 
-        self.damage = 1
+        self.damage = 5
         self.damage_cooldown = 1
 
         self.animation_loop = 1

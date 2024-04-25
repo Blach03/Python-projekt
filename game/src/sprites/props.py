@@ -19,6 +19,8 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(size=(20, 20))
         self.dx = math.cos(self.angle) * speed
         self.dy = math.sin(self.angle) * speed
+        self.x += math.cos(self.angle) * TILE_SIZE / 2
+        self.y += math.sin(self.angle) * TILE_SIZE / 2
         self.speed = speed
         self.blowing = False
 

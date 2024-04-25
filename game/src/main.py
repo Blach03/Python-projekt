@@ -1,17 +1,13 @@
 import sys
-import pygame
 
-# TO DO
-from sprites import *
-from config import *
-from generate import *
-from player_info import *
+
 from items import *
-
 from config import *
+from player_info import draw_player_info, draw_item_info, draw_gold_hp
 from src.sprites.player import Player
 from src.sprites.other import DrawSpriteGroup, Button, DarkOverlay
 from src.sprites.enemies import Enemy
+from src.sprites.shopItem import ShopItem
 from generate import generate_map, generate_rooms
 from tile_builder import build_tile, tile_to_change
 from map import update_map, draw_map
@@ -67,15 +63,15 @@ class Game:
     def draw(self):
         self.ground.draw(self.screen)
         self.overlay.draw(self.screen)
-        self.attacks.draw(self.screen)
         self.player.draw(self.screen)
         self.enemies.draw(self.screen)
+        self.attacks.draw(self.screen)
         draw_map(self)
-        display_player_info(self)
-        display_item_information(self)
-        display_gold_hp(self)
+        draw_player_info(self)
+        draw_item_info(self)
+        draw_gold_hp(self)
         shop_item = self.player_near_shop_item()
-        if shop_item != None:
+        if shop_item is not None:
             display_shop_item(self, shop_item)
 
         self.clock.tick(FPS)
@@ -83,11 +79,10 @@ class Game:
         pygame.display.flip()
 
     def player_near_shop_item(self):
-        for shop_item in self.all_sprites:
+        for shop_item in self.attacks:
             if isinstance(shop_item, ShopItem) and shop_item.is_player_near(self.player):
                 return shop_item
         return None
-
 
     def main(self):
         while self.playing:
@@ -110,10 +105,16 @@ class Game:
 
         while outro:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT or quit_button.is_pressed(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]):
+                if event.type == pygame.QUIT:
                     outro = False
 
-            if play_button.is_pressed(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]):
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_left_click = pygame.mouse.get_pressed()[0]
+
+            if quit_button.is_pressed(mouse_pos, mouse_left_click):
+                outro = False
+
+            if play_button.is_pressed(mouse_pos, mouse_left_click):
                 outro = False
                 play_again = True
 

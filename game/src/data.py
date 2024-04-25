@@ -15,8 +15,6 @@ class SpriteSheet:
 
 class Data:
     def __init__(self):
-        self.arial14 = pygame.font.Font('../resources/arial.ttf', 14)
-
         self.character_sprite_sheet = SpriteSheet('../resources/character.png')
         self.blocks_sprite_sheet = SpriteSheet('../resources/blocks.png')
         self.enemy_sprite_sheet = SpriteSheet('../resources/spider2.png')

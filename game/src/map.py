@@ -48,9 +48,10 @@ image_paths = {
 
 
 images = {}
-for value, path in image_paths.items():
+for index, path in image_paths.items():
     image = pygame.image.load(path)
-    images[value] = pygame.transform.scale(image, (TILE_SIZE, TILE_SIZE))
+    images[index] = pygame.transform.scale(image, (TILE_SIZE, TILE_SIZE))
+
 
 def combine_images(matrix):
     rows = len(matrix)
@@ -74,4 +75,4 @@ def combine_images(matrix):
 
     return combined_surface
 
-#add map resizing and image pos
+# add map resizing and image pos

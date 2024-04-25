@@ -25,13 +25,13 @@ def generate_map():
         curr_location = [curr_location[0] + neigh[x][0], curr_location[1] + neigh[x][1]]
         if map[curr_location[0]][curr_location[1]] == 0:
             map[curr_location[0]][curr_location[1]] = 1
-        if i > 10 and i < 40:
-            x = randint(0,15)
-            if x != 1: #for testing (change != to ==)
-                map[curr_location[0]][curr_location[1]] = 1.2 #shop
+        if 10 < i < 40:
+            x = randint(0, 15)
+            if x != 1:  # for testing (change != to ==)
+                map[curr_location[0]][curr_location[1]] = 1.2  # shop
                 shops += 1
         if i == 40 and shops == 0:
-            map[curr_location[0]][curr_location[1]] = 1.2 #pity shop so that there is at least 1
+            map[curr_location[0]][curr_location[1]] = 1.2  # pity shop so that there is at least 1
     map[curr_location[0]][curr_location[1]] = 2
     map[50][50] = 3
 
