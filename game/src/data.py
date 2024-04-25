@@ -17,7 +17,7 @@ class Data:
     def __init__(self):
         self.character_sprite_sheet = SpriteSheet('../resources/character.png')
         self.blocks_sprite_sheet = SpriteSheet('../resources/blocks.png')
-        self.enemy_sprite_sheet = SpriteSheet('../resources/spider2.png')
+        self.enemy_sprite_sheet = SpriteSheet('../resources/spider.png')
         self.bullets_sprite_sheet = SpriteSheet('../resources/bullets.png')
         self.attack_sprite_sheet = SpriteSheet('../resources/attack.png')
 

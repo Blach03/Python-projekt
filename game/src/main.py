@@ -43,6 +43,7 @@ class Game:
         self.playing = True
         self.player = Player(self, (9.5 * TILE_SIZE, 7 * TILE_SIZE), self.start)
 
+        # TESTOWANIE PRZECIWNIKÓW (dodać generowanie i zapisywanie przeciwników do mapy)
         Enemy(self, (12 * TILE_SIZE, 12 * TILE_SIZE))
         Enemy(self, (7 * TILE_SIZE, 13 * TILE_SIZE))
 
@@ -92,11 +93,38 @@ class Game:
 
         self.running = False
 
+    def intro_screen(self):
+        intro = True
+
+        intro_background = pygame.image.load('../resources/intro_background.jpg')
+        intro_background = pygame.transform.scale(intro_background, (1440, 720))
+
+        title_font = pygame.font.SysFont('chiller', 120)
+        title = title_font.render('Dungeon Adventure', True, MID_RED)
+        title_rect = title.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT*0.42))
+
+        play_button = Button((WIN_WIDTH/2, WIN_HEIGHT*0.58), (120, 60), BLACK, MID_RED, 'Play', 40)
+
+        while intro:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    intro = False
+                    self.running = False
+
+            if play_button.is_pressed(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]):
+                intro = False
+
+            self.screen.blit(intro_background, (-240, 0))
+            self.screen.blit(title, title_rect)
+            self.screen.blit(play_button.image, play_button.rect)
+            self.clock.tick(60)
+            pygame.display.update()
+
     def game_over(self):
         global play_again
         outro = True
         background = pygame.image.load('../resources/end_background.png')
-        title_font = pygame.font.Font('../resources/chiller.ttf', 120)
+        title_font = pygame.font.SysFont('chiller', 120)
         title = title_font.render('Game over', True, MID_RED)
         title_rect = title.get_rect(center=(WIN_WIDTH / 2, WIN_HEIGHT * 0.35))
 
@@ -122,33 +150,6 @@ class Game:
             self.screen.blit(title, title_rect)
             self.screen.blit(play_button.image, play_button.rect)
             self.screen.blit(quit_button.image, quit_button.rect)
-            self.clock.tick(60)
-            pygame.display.update()
-
-    def intro_screen(self):
-        intro = True
-
-        intro_background = pygame.image.load('../resources/intro_background.jpg')
-        intro_background = pygame.transform.scale(intro_background, (1440, 720))
-
-        title_font = pygame.font.Font('../resources/chiller.ttf', 100)
-        title = title_font.render('Dungeon Adventure', True, MID_RED)
-        title_rect = title.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT*0.42))
-
-        play_button = Button((WIN_WIDTH/2, WIN_HEIGHT*0.58), (120, 60), BLACK, MID_RED, 'Play', 40)
-
-        while intro:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    intro = False
-                    self.running = False
-
-            if play_button.is_pressed(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]):
-                intro = False
-
-            self.screen.blit(intro_background, (-240, 0))
-            self.screen.blit(title, title_rect)
-            self.screen.blit(play_button.image, play_button.rect)
             self.clock.tick(60)
             pygame.display.update()
 

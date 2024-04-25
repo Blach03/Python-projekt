@@ -68,7 +68,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def damage_player(self):
         if self.damage_cooldown > 60 and pygame.sprite.collide_rect(self, self.game.player):
-            self.game.player.take_damage(3)
+            self.game.player.take_damage(self.damage)
             self.damage_cooldown = 1
 
     def animate(self):
