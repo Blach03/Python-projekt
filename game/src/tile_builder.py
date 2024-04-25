@@ -11,7 +11,9 @@ def build_tile(game, tile):
                 Ground(game, j, i)
             elif elem == 'B' or elem == 'P':
                 Wall(game, j, i)
-            if random.randint(1, 10) > 9:
+            elif elem == 'I':
+                ShopItem(game, j, i)
+            if random.randint(1, 10) > 9  and elem != 'I':
                 CobWeb(game, j, i)
 
 
