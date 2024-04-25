@@ -1,7 +1,7 @@
-import pygame
 import math
 from src.config import *
 from src.sprites.props import Bullet, Attack
+from src.player_info import *
 
 
 class Player(pygame.sprite.Sprite):
@@ -20,18 +20,36 @@ class Player(pygame.sprite.Sprite):
         self.image = self.game.data.player_animation_positions.get(self.facing)[0]
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.x, self.y
-        self.width, self.height = self.rect.width, self.rect.height
+        self.width, self.height = self.rect.size
 
         self.map_open = False
         self.map_open_pressed = False
 
         self.last_shooting = 1
 
-        self.max_health = 30
-        self.health = 30
+        self.info_open = False
+        self.info_open_pressed = False
+
+        self.item_open = False
+        self.item_open_pressed = False
+
+        self.clicked_slot = None
+
+        self.attack = 20
+        self.hp = 100
+        self.defense = 5
+        self.range = 0.5
+        self.attack_speed = 1
+        self.movement_speed = PLAYER_SPEED
+
+        self.current_hp = 100
+
+        self.gold = 100000  # for testing
+
+        self.inventory = []
 
     def update(self):
-        self.keyboard_action()
+        self.interaction()
         self.animate()
 
         self.x += self.x_change
@@ -48,30 +66,21 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-        self.draw_health_bar(surface)
 
-    def draw_health_bar(self, surface):
-        factor = self.health / self.max_health
-        pygame.draw.rect(surface, (180, 0, 0), (14, WIN_HEIGHT - 34, 200, 20))
-        pygame.draw.rect(surface, (0, 180, 0), (14, WIN_HEIGHT - 34, 200 * factor, 20))
-        title = self.game.data.arial14.render(f'{self.health} / {self.max_health}', True, (0, 0, 0))
-        title_rect = title.get_rect(center=(max(200 * factor - 12, 40), WIN_HEIGHT - 24))
-        surface.blit(title, title_rect)
-
-    def keyboard_action(self):
+    def interaction(self):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_UP]:
-            self.y_change -= PLAYER_SPEED
+            self.y_change -= self.movement_speed
             self.facing = 'up'
         if keys[pygame.K_DOWN]:
-            self.y_change += PLAYER_SPEED
+            self.y_change += self.movement_speed
             self.facing = 'down'
         if keys[pygame.K_RIGHT]:
-            self.x_change += PLAYER_SPEED
+            self.x_change += self.movement_speed
             self.facing = 'right'
         if keys[pygame.K_LEFT]:
-            self.x_change -= PLAYER_SPEED
+            self.x_change -= self.movement_speed
             self.facing = 'left'
 
         if self.x_change != 0 and self.y_change != 0:
@@ -84,9 +93,27 @@ class Player(pygame.sprite.Sprite):
         elif not keys[pygame.K_m]:
             self.map_open_pressed = False
 
-        if pygame.mouse.get_pressed()[0] and self.last_shooting > 20:
-            Bullet(self.game, 5, pygame.mouse.get_pos())
+        if keys[pygame.K_TAB] and not self.info_open_pressed:
+            self.info_open_pressed = True
+            self.info_open = not self.info_open
+        elif not keys[pygame.K_TAB]:
+            self.info_open_pressed = False
+
+        mouse_buttons = pygame.mouse.get_pressed()
+
+        if mouse_buttons[0] and self.last_shooting > 20:
+            Bullet(self.game, 8, pygame.mouse.get_pos())
             self.last_shooting = 1
+
+        if mouse_buttons[0]:
+            mouse_pos = pygame.mouse.get_pos()
+            self.clicked_slot = self.get_clicked_inventory_slot(mouse_pos)
+            if self.clicked_slot is not None:
+                if not self.item_open_pressed:
+                    self.item_open_pressed = True
+                    self.item_open = not self.item_open
+        else:
+            self.item_open_pressed = False
 
         if keys[pygame.K_SPACE] and self.last_shooting > 20:
             Attack(self.game, self.rect.x, self.rect.y)
@@ -105,9 +132,21 @@ class Player(pygame.sprite.Sprite):
                 self.animation_loop = 1
 
     def take_damage(self, damage):
-        self.health -= damage
-        if self.health <= 0:
+        self.current_hp -= damage
+        if self.current_hp <= 0:
             self.game.playing = False
+
+    def get_clicked_inventory_slot(self, mouse_pos):
+        x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
+        for item_index, item in enumerate(self.inventory):
+            item_row = item_index // GRID_WIDTH
+            item_col = item_index % GRID_WIDTH
+            item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
+            item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
+
+            if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
+                return item_index
+        return None
 
 
 def collide_blocks(sprite, direction):

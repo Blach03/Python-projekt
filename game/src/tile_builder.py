@@ -1,5 +1,6 @@
 from map import update_map
 from src.sprites.blocks import Wall, Ground, CobWeb
+from src.sprites.shopItem import ShopItem
 import random
 from config import *
 
@@ -13,7 +14,7 @@ def build_tile(game, tile):
                 Wall(game, j, i)
             elif elem == 'I':
                 ShopItem(game, j, i)
-            if random.randint(1, 10) > 9  and elem != 'I':
+            if random.randint(1, 10) > 9 and elem != 'I':
                 CobWeb(game, j, i)
 
 
