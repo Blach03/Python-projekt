@@ -23,7 +23,7 @@ class DarkOverlay:
 
 class Button:
     def __init__(self, center, size, fg, bg, content, fontsize):
-        font = pygame.font.Font('../resources/chiller.ttf', fontsize)
+        font = pygame.font.SysFont('chiller', fontsize)
         text = font.render(content, True, fg)
         text_rect = text.get_rect(center=(size[0] / 2, size[1] / 2))
 
