@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 from src.config import TILE_SIZE
 from src.items import all_items
 from src.sprites.blocks import Wall
@@ -27,8 +26,8 @@ class ShopItem(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = x * TILE_SIZE, y * TILE_SIZE
 
     def is_player_near(self, player):
-        distance = math.sqrt(
-            (player.rect.centerx - self.rect.centerx) ** 2 + (player.rect.centery - self.rect.centery) ** 2)
+        distance = ((player.rect.centerx - self.rect.centerx) ** 2 +
+                    (player.rect.centery - self.rect.centery) ** 2) ** 0.5
 
         return distance <= 70
 
