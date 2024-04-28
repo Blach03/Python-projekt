@@ -6,7 +6,7 @@ from config import *
 from player_info import draw_player_info, draw_item_info, draw_gold_hp
 from src.sprites.player import Player
 from src.sprites.other import DrawSpriteGroup, Button, DarkOverlay
-from src.sprites.enemies import Enemy
+from src.sprites.enemies import Spider
 from src.sprites.shopItem import ShopItem
 from generate import generate_map, generate_rooms
 from tile_builder import build_tile, tile_to_change
@@ -34,6 +34,8 @@ class Game:
         self.overlay = DarkOverlay()
         self.data = Data()
 
+        self.difficulty = 1
+
     def new(self):
         self.map, self.start, self.end = generate_map()
         self.rooms = generate_rooms(self.map)
@@ -44,8 +46,8 @@ class Game:
         self.player = Player(self, (9.5 * TILE_SIZE, 7 * TILE_SIZE), self.start)
 
         # TESTOWANIE PRZECIWNIKÓW (dodać generowanie i zapisywanie przeciwników do mapy)
-        Enemy(self, (12 * TILE_SIZE, 12 * TILE_SIZE))
-        Enemy(self, (7 * TILE_SIZE, 13 * TILE_SIZE))
+        Spider(self, (12 * TILE_SIZE, 12 * TILE_SIZE))
+        Spider(self, (14 * TILE_SIZE, 2 * TILE_SIZE))
 
     def events(self):
         for event in pygame.event.get():
