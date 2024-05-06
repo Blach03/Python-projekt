@@ -1,5 +1,6 @@
 import pygame
 from src.config import *
+import math
 
 
 class DrawSpriteGroup(pygame.sprite.Group):
@@ -39,3 +40,9 @@ class Button:
         if not pressed:
             self.clicked = False
         return is_pressed
+
+
+def defence(defence):
+    percentage = (22.97 * math.log(0.162 * defence + 1.00)) / 100
+    percentage = min(percentage, 0.95)
+    return percentage

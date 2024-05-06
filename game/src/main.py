@@ -25,7 +25,7 @@ class Game:
         self.playing = False
         self.ground = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()
-        self.enemies = DrawSpriteGroup()
+        self.enemies = DrawSpriteGroup()    
         self.attacks = pygame.sprite.Group()
 
         self.map, self.start, self.end = None, None, None
@@ -44,10 +44,6 @@ class Game:
 
         self.playing = True
         self.player = Player(self, (9.5 * TILE_SIZE, 7 * TILE_SIZE), self.start)
-
-        # TESTOWANIE PRZECIWNIKÓW (dodać generowanie i zapisywanie przeciwników do mapy)
-        Spider(self, (12 * TILE_SIZE, 12 * TILE_SIZE))
-        Spider(self, (14 * TILE_SIZE, 2 * TILE_SIZE))
 
     def events(self):
         for event in pygame.event.get():

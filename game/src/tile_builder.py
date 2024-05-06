@@ -3,7 +3,7 @@ from src.sprites.blocks import Wall, Ground, CobWeb
 from src.sprites.shopItem import ShopItem
 import random
 from config import *
-
+from enemies import Spider
 
 def build_tile(game, tile):
     for i, row in enumerate(tile):
@@ -14,6 +14,9 @@ def build_tile(game, tile):
                 Wall(game, j, i)
             elif elem == 'I':
                 ShopItem(game, j, i)
+            elif elem == 'M':
+                Ground(game, j, i)
+                Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
             if random.randint(1, 10) > 9 and elem != 'I':
                 CobWeb(game, j, i)
 
@@ -21,6 +24,7 @@ def build_tile(game, tile):
 def tile_to_change(game):
 
     def change_tile(tile_before, room_x, room_y, x, y):
+        game.enemies.empty()
         game.ground.empty()
         game.walls.empty()
         game.attacks.empty()

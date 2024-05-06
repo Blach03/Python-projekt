@@ -19,6 +19,22 @@ class Item:
 
     def __str__(self):
         return f"{self.name}: {self.description}"
+    
+
+class Potion:
+    def __init__(self, name, image, description, count, price, hp):
+        self.name = name
+        self.description = description
+        self.image = image
+        self.count = count
+        self.price = price
+        self.hp = hp
+
+    def use(self, player):
+        self.count -= 1
+        player.current_hp = min(player.current_hp + self.hp, player.hp)
+
+
 
 
 def display_shop_item(game, shop_item):
@@ -99,7 +115,7 @@ def display_shop_item(game, shop_item):
     if rect.collidepoint(mouse_pos):
         if pygame.mouse.get_pressed()[0]:
             if game.player.gold >= item.price:
-                game.player.inventory.append(item)
+                game.player.items.append(item)
                 add_stats(game.player, item)
                 shop_item.purchase_item(game.player)
 
@@ -129,7 +145,8 @@ all_items = [Item("Sentinel Aegis", "Prevents first incoming \nstrike in every r
              Item("Healing amulet", "Heals some missing health \nafter clearing a room", 1200, '../resources/sword.png',
                   defense=5, hp=20),
              Item("Polearm", "somethin", 2000, '../resources/sword.png', attack=20, attack_speed=0.3,
-                  movement_speed=0.5)
+                  movement_speed=0.5),
+             Potion("Healing potion", '../resources/health_potion.png', 'Heals 20 HP', 1, 100, 20)
              # more defensive items
              # add space for usable items in inventory (potions etc.)
              ]

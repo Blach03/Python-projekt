@@ -2,7 +2,8 @@ import math
 from src.config import *
 from src.sprites.props import Bullet, Attack
 from src.player_info import *
-
+from src.sprites.other import defence
+from src.items import Potion
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, game, position, start_room_pos):
@@ -33,6 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.item_open = False
         self.item_open_pressed = False
 
+        self.previous_mouse_pressed = False
+
         self.clicked_slot = None
 
         self.attack = 20
@@ -46,7 +49,8 @@ class Player(pygame.sprite.Sprite):
 
         self.gold = 100000  # for testing
 
-        self.inventory = []
+        self.items = []
+        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 20 HP', 5, 100, 20)]
 
     def update(self):
         self.interaction()
@@ -100,13 +104,13 @@ class Player(pygame.sprite.Sprite):
             self.info_open_pressed = False
 
         mouse_buttons = pygame.mouse.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
 
         if mouse_buttons[0] and self.last_shooting > 20:
             Bullet(self.game, 8, pygame.mouse.get_pos())
             self.last_shooting = 1
 
-        if mouse_buttons[0]:
-            mouse_pos = pygame.mouse.get_pos()
+        if self.previous_mouse_pressed:
             self.clicked_slot = self.get_clicked_inventory_slot(mouse_pos)
             if self.clicked_slot is not None:
                 if not self.item_open_pressed:
@@ -118,6 +122,8 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_SPACE] and self.last_shooting > 20:
             Attack(self.game, self.rect.x, self.rect.y)
             self.last_shooting = 1
+
+        self.previous_mouse_pressed = mouse_buttons[0]
 
     def get_room(self):
         return self.room_x, self.room_y
@@ -132,20 +138,31 @@ class Player(pygame.sprite.Sprite):
                 self.animation_loop = 1
 
     def take_damage(self, damage):
-        self.current_hp -= damage
+        self.current_hp -= (damage * (1 - defence(self.defense)))
         if self.current_hp <= 0:
             self.game.playing = False
 
     def get_clicked_inventory_slot(self, mouse_pos):
         x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
-        for item_index, item in enumerate(self.inventory):
-            item_row = item_index // GRID_WIDTH
-            item_col = item_index % GRID_WIDTH
+
+        for item_index in range(24):
+            item_row = item_index // 8
+            item_col = item_index % 8
             item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
             item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
 
             if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
                 return item_index
+
+        for item_index in range(24, 30):
+            item_row = (item_index - 24) // 2
+            item_col = (item_index - 24) % 2 + 8
+            item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
+            item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
+
+            if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
+                return item_index
+
         return None
 
 
