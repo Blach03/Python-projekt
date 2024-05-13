@@ -2,7 +2,7 @@ import random
 
 import pygame
 from player import collide_blocks
-
+from player_info import trigger_ripple
 
 class Spider(pygame.sprite.Sprite):
     def __init__(self, game, position):
@@ -67,6 +67,8 @@ class Spider(pygame.sprite.Sprite):
         if self.health <= 0:
             if player.has_heartguard:
                 player.hp += 1
+            if player.has_amulet:
+                player.current_hp = min(player.hp, player.current_hp + 10)
             self.kill()
 
     def draw(self, surface):
@@ -145,9 +147,19 @@ class CobWeb(pygame.sprite.Sprite):
             self.animation_pos += 1
             if self.animation_pos == 11:
                 if pygame.sprite.collide_rect(self, self.game.player):
-                    self.game.player.take_damage(self.damage)
+                    room = self.game.player.get_room()
+                    if room not in self.game.player.shield_used_rooms and self.game.player.has_shield:
+                        self.game.player.shield_used_rooms.append(room)
+                    else:
+                        self.game.player.take_damage(self.damage)
                     if self.game.player.has_thornforge:
                         self.spider.register_hit(self.game.player, self.damage * 0.3)
+                    if self.game.player.has_retaliation:
+                        if room not in self.game.player.retaliation_used_rooms:
+                            self.game.player.retaliation_used_rooms.append(room)
+                            trigger_ripple((self.game.player.x + 23, self.game.player.y + 23))
+                            for enemy in self.game.enemies:
+                                enemy.register_hit(self.game.player, self.damage * 5)
                 self.kill()
                 return
             self.image = self.game.data.spider.get('web')[self.animation_pos // 2]

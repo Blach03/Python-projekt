@@ -3,7 +3,7 @@ import sys
 
 from items import *
 from config import *
-from player_info import draw_player_info, draw_item_info, draw_gold_hp
+from player_info import draw_player_info, draw_item_info, draw_gold_hp, draw_circle, draw_ripples
 from player import Player
 from other import DrawSpriteGroup, Button, DarkOverlay
 from enemies import Spider
@@ -35,6 +35,7 @@ class Game:
         self.data = Data()
 
         self.difficulty = 1
+        self.damage_frame_counter = 0
 
     def new(self):
         self.map, self.start, self.end = generate_map()
@@ -69,6 +70,8 @@ class Game:
         draw_player_info(self)
         draw_item_info(self)
         draw_gold_hp(self)
+        draw_circle(self)
+        draw_ripples(self)
         shop_item = self.player_near_shop_item()
         if shop_item is not None:
             display_shop_item(self, shop_item)
@@ -150,6 +153,7 @@ class Game:
             self.screen.blit(quit_button.image, quit_button.rect)
             self.clock.tick(60)
             pygame.display.update()
+
 
 
 play_again = True

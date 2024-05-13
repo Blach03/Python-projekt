@@ -57,10 +57,10 @@ class Player(pygame.sprite.Sprite):
         self.has_vorpal = False
         self.has_thornforge = False
         self.has_retaliation = False
-        self.retaliation_active = True
+        self.retaliation_used_rooms = []
         self.has_phantom = False
         self.has_shield = False
-        self.shield_active = True
+        self.shield_used_rooms = []
         self.has_soulthirster = False
         self.has_disc = False
         self.has_amulet = False

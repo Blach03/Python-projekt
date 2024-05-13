@@ -132,7 +132,7 @@ def add_stats(player, item):
 
 all_items = [Item("Sentinel Aegis", "Prevents first incoming \nstrike in every room", 1500, '../resources/shield.png',
                   defense=10, hp=30),
-             Item("Sword", "somethin", 1000, '../resources/sword.png', attack=10, hp=10, attack_speed=0.2),
+             Item("Sword", "Does nothing", 1000, '../resources/sword.png', attack=10, hp=10, attack_speed=0.2),
              Item("Thornforge Armor", "Damages enemies for 30% damage \ndealt to you", 2000,
                   '../resources/thornforge.png', defense=15, movement_speed=-1),
              Item("Wings", "Allows flying over terrain", 5000, '../resources/wings.png', movement_speed=1),
@@ -145,7 +145,7 @@ all_items = [Item("Sentinel Aegis", "Prevents first incoming \nstrike in every r
              Item("Guardian's Edge", "somethin", 2000, '../resources/guardians edge.png', attack=10, hp=20, defense=10),
              Item("Arcane Halo", "Deals damage around you", 1800, '../resources/disc.png', attack=5, hp=20),
              Item("Scythe", "somethin", 2800, '../resources/sword.png', attack=35),
-             Item("Healing amulet", "Heals some missing health \nafter clearing a room", 1200, '../resources/sword.png',
+             Item("Healing amulet", "Heals some missing health \nafter killing enemy", 1200, '../resources/sword.png',
                   defense=5, hp=20),
              Item("Polearm", "somethin", 2000, '../resources/sword.png', attack=20, attack_speed=0.3,
                   movement_speed=0.5),
