@@ -4,10 +4,10 @@ import sys
 from items import *
 from config import *
 from player_info import draw_player_info, draw_item_info, draw_gold_hp
-from src.sprites.player import Player
-from src.sprites.other import DrawSpriteGroup, Button, DarkOverlay
-from src.sprites.enemies import Spider
-from src.sprites.shopItem import ShopItem
+from player import Player
+from other import DrawSpriteGroup, Button, DarkOverlay
+from enemies import Spider
+from shopItem import ShopItem
 from generate import generate_map, generate_rooms
 from tile_builder import build_tile, tile_to_change
 from map import update_map, draw_map
@@ -25,7 +25,7 @@ class Game:
         self.playing = False
         self.ground = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()
-        self.enemies = DrawSpriteGroup()
+        self.enemies = DrawSpriteGroup()    
         self.attacks = pygame.sprite.Group()
 
         self.map, self.start, self.end = None, None, None
@@ -44,10 +44,6 @@ class Game:
 
         self.playing = True
         self.player = Player(self, (9.5 * TILE_SIZE, 7 * TILE_SIZE), self.start)
-
-        # TESTOWANIE PRZECIWNIKÓW (dodać generowanie i zapisywanie przeciwników do mapy)
-        Spider(self, (12 * TILE_SIZE, 12 * TILE_SIZE))
-        Spider(self, (14 * TILE_SIZE, 2 * TILE_SIZE))
 
     def events(self):
         for event in pygame.event.get():

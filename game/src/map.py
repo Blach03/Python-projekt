@@ -35,7 +35,22 @@ def update_map(game, before, after):
 
 def draw_map(game):
     if game.player.map_open:
-        game.screen.blit(combine_images(game.map), __image_pos)
+        combined_surface = combine_images(game.map)
+
+        max_width = WIN_WIDTH * 0.85
+        max_height = WIN_HEIGHT * 0.85
+        
+        width, height = combined_surface.get_width(), combined_surface.get_height()
+        if width > max_width or height > max_height:
+            scale_factor = min(max_width / width, max_height / height)
+            scaled_width, scaled_height = int(width * scale_factor), int(height * scale_factor)
+            combined_surface = pygame.transform.scale(combined_surface, (scaled_width, scaled_height))
+
+        __image_pos = (
+            (WIN_WIDTH - combined_surface.get_width()) / 2,
+            (WIN_HEIGHT - combined_surface.get_height()) / 2
+        )
+        game.screen.blit(combined_surface, __image_pos)
 
 
 image_paths = {
@@ -74,5 +89,3 @@ def combine_images(matrix):
     pygame.draw.rect(combined_surface, border_color, combined_surface.get_rect(), BORDER_SIZE)
 
     return combined_surface
-
-# add map resizing and image pos

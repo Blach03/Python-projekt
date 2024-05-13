@@ -1,5 +1,5 @@
 import pygame
-from src.config import WIN_WIDTH, WIN_HEIGHT
+from config import WIN_WIDTH, WIN_HEIGHT
 from player_info import create_rounded_surface, ITEM_INFO_HEIGHT, ITEM_INFO_WIDTH
 
 
@@ -19,6 +19,22 @@ class Item:
 
     def __str__(self):
         return f"{self.name}: {self.description}"
+    
+
+class Potion:
+    def __init__(self, name, image, description, count, price, hp):
+        self.name = name
+        self.description = description
+        self.image = image
+        self.count = count
+        self.price = price
+        self.hp = hp
+
+    def use(self, player):
+        self.count -= 1
+        player.current_hp = min(player.current_hp + self.hp, player.hp)
+
+
 
 
 def display_shop_item(game, shop_item):
@@ -99,29 +115,32 @@ def display_shop_item(game, shop_item):
     if rect.collidepoint(mouse_pos):
         if pygame.mouse.get_pressed()[0]:
             if game.player.gold >= item.price:
-                game.player.inventory.append(item)
+                game.player.items.append(item)
                 add_stats(game.player, item)
-                shop_item.purchase_item(game.player)
+                shop_item.purchase_item(game.player, game)
 
 
 def add_stats(player, item):
     attributes = ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
+    if player.has_vorpal:
+        player.attack = player.attack / 1.2
     for attribute in attributes:
         setattr(player, attribute, getattr(player, attribute) + getattr(item, attribute))
+    if player.has_vorpal:
+        player.attack = player.attack * 1.2
 
 
 all_items = [Item("Sentinel Aegis", "Prevents first incoming \nstrike in every room", 1500, '../resources/shield.png',
                   defense=10, hp=30),
              Item("Sword", "somethin", 1000, '../resources/sword.png', attack=10, hp=10, attack_speed=0.2),
-             Item("Thornforge Armor", "Damages enemies for 20% damage \ndealt to you", 2000,
+             Item("Thornforge Armor", "Damages enemies for 30% damage \ndealt to you", 2000,
                   '../resources/thornforge.png', defense=15, movement_speed=-1),
              Item("Wings", "Allows flying over terrain", 5000, '../resources/wings.png', movement_speed=1),
-             # might be hard to implement
              Item("Soulthirster Blade", "Heals for 5% of damage dealt", 2500, '../resources/soulthirster.png',
                   attack=20),
              Item("Vorpal Shard", "Gives additional 20% attack", 3000, '../resources/dagger.png', attack=20,
                   movement_speed=0.5),
-             Item("Wyrmblade", "somethin", 2000, '../resources/wyrmblade.png', attack=15, hp=20, attack_range=0.2,
+             Item("Wyrmblade", "Deals additional 5% max health \nper hit (1% to bosses)", 2000, '../resources/wyrmblade.png', attack=15, hp=20, attack_range=0.2,
                   movement_speed=- 0.5),
              Item("Guardian's Edge", "somethin", 2000, '../resources/guardians edge.png', attack=10, hp=20, defense=10),
              Item("Arcane Halo", "Deals damage around you", 1800, '../resources/disc.png', attack=5, hp=20),
@@ -129,7 +148,15 @@ all_items = [Item("Sentinel Aegis", "Prevents first incoming \nstrike in every r
              Item("Healing amulet", "Heals some missing health \nafter clearing a room", 1200, '../resources/sword.png',
                   defense=5, hp=20),
              Item("Polearm", "somethin", 2000, '../resources/sword.png', attack=20, attack_speed=0.3,
-                  movement_speed=0.5)
-             # more defensive items
+                  movement_speed=0.5),
+             Item("Retaliation Raiment", "Once per room after getting damaged \ndeals damage to all enemies", 2200,
+                  '../resources/retaliation.png', hp=30),
+             Item("Heartguard", "After each enemy killed \ngives you 1 HP", 3000,
+                  '../resources/heartguard.png', hp=40),
+             Item("Phantom boots", "Has 20% chance \nto dodge an attack", 2600,
+                  '../resources/phantom.png', hp=10, defense = 10),
+
+            
+             Potion("Healing potion", '../resources/health_potion.png', 'Heals 20 HP', 1, 100, 20)
              # add space for usable items in inventory (potions etc.)
              ]
