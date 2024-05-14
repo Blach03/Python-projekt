@@ -40,7 +40,7 @@ class Button:
         if not pressed:
             self.clicked = False
         return is_pressed
-    
+
 
 def defence(defence):
     percentage = (22.97 * math.log(0.162 * defence + 1.00)) / 100
