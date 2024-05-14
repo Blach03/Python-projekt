@@ -50,7 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.gold = 100000  # for testing
 
         self.items = []
-        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 20 HP', 5, 100, 20)]
+        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 50 HP', 3, 0, 50), Potion("Defence potion", '../resources/defence_potion.png', 'Gives 20 defence for 3 min', 1, 0, 20), Potion("Attack potion", '../resources/attack_potion.png', 'Gives 30 attack for 3 min', 1, 0, 30), Potion("Regeneration potion", '../resources/regen_potion.png', 'Restores 1 HP per secound for 1 min', 1, 0, 1)]
 
         self.has_heartguard = False
         self.has_wings = False
