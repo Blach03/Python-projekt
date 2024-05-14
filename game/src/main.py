@@ -4,10 +4,10 @@ import sys
 from items import *
 from config import *
 from player_info import draw_player_info, draw_item_info, draw_gold_hp, draw_circle, draw_ripples
-from player import Player
-from other import DrawSpriteGroup, Button, DarkOverlay
-from enemies import Spider
-from shopItem import ShopItem
+from src.sprites.player import Player
+from src.sprites.other import DrawSpriteGroup, Button, DarkOverlay
+from src.sprites.enemies import Spider
+from src.sprites.shopItem import ShopItem
 from generate import generate_map, generate_rooms
 from tile_builder import build_tile, tile_to_change
 from map import update_map, draw_map

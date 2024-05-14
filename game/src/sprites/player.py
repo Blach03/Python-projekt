@@ -2,7 +2,8 @@ import math
 from src.config import *
 from src.sprites.props import Bullet, Attack
 from src.player_info import *
-
+from src.sprites.other import defence
+from src.items import Potion
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, game, position, start_room_pos):
@@ -33,6 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.item_open = False
         self.item_open_pressed = False
 
+        self.previous_mouse_pressed = False
+
         self.clicked_slot = None
 
         self.attack = 20
@@ -46,7 +49,29 @@ class Player(pygame.sprite.Sprite):
 
         self.gold = 100000  # for testing
 
-        self.inventory = []
+        self.items = []
+        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 50 HP', 3, 0, 50), Potion("Defence potion", '../resources/defence_potion.png', 'Gives 20 defence for 3 min', 1, 0, 20), Potion("Attack potion", '../resources/attack_potion.png', 'Gives 30 attack for 3 min', 1, 0, 30), Potion("Regeneration potion", '../resources/regen_potion.png', 'Restores 1 HP per secound for 1 min', 1, 0, 1)]
+
+        self.has_heartguard = False
+        self.has_wings = False
+        self.has_vorpal = False
+        self.has_thornforge = False
+        self.has_retaliation = False
+        self.retaliation_used_rooms = []
+        self.has_phantom = False
+        self.has_shield = False
+        self.shield_used_rooms = []
+        self.has_soulthirster = False
+        self.has_disc = False
+        self.has_amulet = False
+        self.has_wyrmblade = False
+        self.has_scythe = False
+        self.scythe_used_on = []
+        self.has_polearm = False
+        self.has_edge = False
+
+        self.boost_given = False
+
 
     def update(self):
         self.interaction()
@@ -100,13 +125,13 @@ class Player(pygame.sprite.Sprite):
             self.info_open_pressed = False
 
         mouse_buttons = pygame.mouse.get_pressed()
+        mouse_pos = pygame.mouse.get_pos()
 
         if mouse_buttons[0] and self.last_shooting > 20:
             Bullet(self.game, 8, pygame.mouse.get_pos())
             self.last_shooting = 1
 
-        if mouse_buttons[0]:
-            mouse_pos = pygame.mouse.get_pos()
+        if self.previous_mouse_pressed:
             self.clicked_slot = self.get_clicked_inventory_slot(mouse_pos)
             if self.clicked_slot is not None:
                 if not self.item_open_pressed:
@@ -118,6 +143,8 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_SPACE] and self.last_shooting > 20:
             Attack(self.game, self.rect.x, self.rect.y)
             self.last_shooting = 1
+
+        self.previous_mouse_pressed = mouse_buttons[0]
 
     def get_room(self):
         return self.room_x, self.room_y
@@ -132,35 +159,57 @@ class Player(pygame.sprite.Sprite):
                 self.animation_loop = 1
 
     def take_damage(self, damage):
-        self.current_hp -= damage
+        self.current_hp -= (damage * (1 - defence(self.defense)))
         if self.current_hp <= 0:
             self.game.playing = False
 
     def get_clicked_inventory_slot(self, mouse_pos):
         x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
-        for item_index, item in enumerate(self.inventory):
-            item_row = item_index // GRID_WIDTH
-            item_col = item_index % GRID_WIDTH
+
+        for item_index in range(24):
+            item_row = item_index // 8
+            item_col = item_index % 8
             item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
             item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
 
             if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
                 return item_index
+
+        for item_index in range(24, 30):
+            item_row = (item_index - 24) // 2
+            item_col = (item_index - 24) % 2 + 8
+            item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
+            item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
+
+            if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
+                return item_index
+
         return None
 
 
 def collide_blocks(sprite, direction):
+    has_wings = getattr(sprite, 'has_wings', False)
+
+    if has_wings:
+        if (sprite.rect.x < TILE_SIZE or sprite.rect.right > WIN_WIDTH - TILE_SIZE or
+                sprite.rect.y < TILE_SIZE or sprite.rect.bottom > WIN_HEIGHT - TILE_SIZE):
+            handle_collision(sprite, direction)
+    else:
+        handle_collision(sprite, direction)
+
+
+def handle_collision(sprite, direction):
     hits = pygame.sprite.spritecollide(sprite, sprite.game.walls, False)
     if hits:
         if direction == 'x':
             if sprite.x_change > 0:
                 sprite.rect.x = hits[0].rect.left - sprite.rect.width
-            if sprite.x_change < 0:
+            elif sprite.x_change < 0:
                 sprite.rect.x = hits[0].rect.right
             sprite.x = sprite.rect.x
-        if direction == 'y':
+        elif direction == 'y':
             if sprite.y_change > 0:
                 sprite.rect.y = hits[0].rect.top - sprite.rect.height
-            if sprite.y_change < 0:
+            elif sprite.y_change < 0:
                 sprite.rect.y = hits[0].rect.bottom
             sprite.y = sprite.rect.y
