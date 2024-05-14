@@ -50,7 +50,28 @@ class Player(pygame.sprite.Sprite):
         self.gold = 100000  # for testing
 
         self.items = []
-        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 20 HP', 5, 100, 20)]
+        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 50 HP', 3, 0, 50), Potion("Defence potion", '../resources/defence_potion.png', 'Gives 20 defence for 3 min', 1, 0, 20), Potion("Attack potion", '../resources/attack_potion.png', 'Gives 30 attack for 3 min', 1, 0, 30), Potion("Regeneration potion", '../resources/regen_potion.png', 'Restores 1 HP per secound for 1 min', 1, 0, 1)]
+
+        self.has_heartguard = False
+        self.has_wings = False
+        self.has_vorpal = False
+        self.has_thornforge = False
+        self.has_retaliation = False
+        self.retaliation_used_rooms = []
+        self.has_phantom = False
+        self.has_shield = False
+        self.shield_used_rooms = []
+        self.has_soulthirster = False
+        self.has_disc = False
+        self.has_amulet = False
+        self.has_wyrmblade = False
+        self.has_scythe = False
+        self.scythe_used_on = []
+        self.has_polearm = False
+        self.has_edge = False
+
+        self.boost_given = False
+
 
     def update(self):
         self.interaction()
@@ -167,17 +188,28 @@ class Player(pygame.sprite.Sprite):
 
 
 def collide_blocks(sprite, direction):
+    has_wings = getattr(sprite, 'has_wings', False)
+
+    if has_wings:
+        if (sprite.rect.x < TILE_SIZE or sprite.rect.right > WIN_WIDTH - TILE_SIZE or
+                sprite.rect.y < TILE_SIZE or sprite.rect.bottom > WIN_HEIGHT - TILE_SIZE):
+            handle_collision(sprite, direction)
+    else:
+        handle_collision(sprite, direction)
+
+
+def handle_collision(sprite, direction):
     hits = pygame.sprite.spritecollide(sprite, sprite.game.walls, False)
     if hits:
         if direction == 'x':
             if sprite.x_change > 0:
                 sprite.rect.x = hits[0].rect.left - sprite.rect.width
-            if sprite.x_change < 0:
+            elif sprite.x_change < 0:
                 sprite.rect.x = hits[0].rect.right
             sprite.x = sprite.rect.x
-        if direction == 'y':
+        elif direction == 'y':
             if sprite.y_change > 0:
                 sprite.rect.y = hits[0].rect.top - sprite.rect.height
-            if sprite.y_change < 0:
+            elif sprite.y_change < 0:
                 sprite.rect.y = hits[0].rect.bottom
             sprite.y = sprite.rect.y

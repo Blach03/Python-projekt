@@ -322,3 +322,57 @@ def draw_gold_hp(game):
     info_surface.blit(health_bar_surface, (10, 30))
 
     game.screen.blit(info_surface, (0, 0))
+
+
+def draw_circle(game):
+        screen = game.screen
+        center = (game.player.x + 23, game.player.y + 23)
+        radius = 120
+
+        temp_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA)
+        
+        if game.player.has_disc:
+            
+            for i in range(radius, 0, -1):
+                color = (255, 255, 0, max(0, (i * 50 // radius)))
+                pygame.draw.circle(temp_surface, color, center, i)
+            
+            screen.blit(temp_surface, (0, 0))
+
+            if game.damage_frame_counter % 40 == 0:
+                for enemy in game.enemies:
+                    distance = pygame.math.Vector2(enemy.rect.centerx - center[0], enemy.rect.centery - center[1]).length()
+                    if distance < radius:
+                        enemy.register_hit(game.player, game.player.attack / 3)
+
+            game.damage_frame_counter += 1
+
+        if game.player.has_shield:
+            room = game.player.get_room()
+            if room not in game.player.shield_used_rooms:
+                radius = 50
+                for i in range(radius, 0, -1):
+                    color = (255, 255, 255, max(0, (i * 50 // radius)))
+                    pygame.draw.circle(temp_surface, color, center, i)
+            
+                screen.blit(temp_surface, (0, 0))
+
+ripples = []
+
+def trigger_ripple(center):
+    ripples.append([center, 0, 255])
+
+def draw_ripples(game):
+    for ripple in ripples[:]:
+        _, radius, alpha = ripple
+        if alpha <= 0:
+            ripples.remove(ripple)
+            continue
+        new_radius = radius + 10 
+        new_alpha = max(alpha - 4, 0)
+        surface = pygame.Surface((new_radius * 2, new_radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(surface, (255,0,0) + (new_alpha,), (new_radius, new_radius), new_radius)
+        surface_rect = surface.get_rect(center=ripple[0])
+        game.screen.blit(surface, surface_rect)
+        ripple[1] = new_radius
+        ripple[2] = new_alpha

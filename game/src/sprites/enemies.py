@@ -2,7 +2,7 @@ import random
 
 import pygame
 from src.sprites.player import collide_blocks
-
+from src.player_info import trigger_ripple
 
 class Spider(pygame.sprite.Sprite):
     def __init__(self, game, position):
@@ -15,7 +15,7 @@ class Spider(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = self.x, self.y
 
         self.x_change, self.y_change = 0, 0
-        self.start_health = self.game.data.spider.get('start_health') * self.game.difficulty
+        self.start_health = self.game.data.spider.get('start_health') * self.game.difficulty * 40
         self.health = self.start_health
         self.facing = 'right'
 
@@ -57,9 +57,28 @@ class Spider(pygame.sprite.Sprite):
         self.x_change *= random.randint(5, 15) / 10
         self.y_change *= random.randint(5, 15) / 10
 
-    def register_hit(self):
-        self.health -= 1
+    def register_hit(self, player, damage):
+        if player.has_scythe and self not in player.scythe_used_on:
+            damage = damage * 3
+            player.scythe_used_on.append(self)
+
+        if player.has_polearm and random.randint(1,10) < 4:
+            damage = damage * 2
+
+        if player.has_edge and player.current_hp > self.health:
+            damage = damage * 1.25
+
+        if player.has_wyrmblade:
+            self.health -= (damage + self.health / 20)
+        else:
+            self.health -= damage
+        if player.has_soulthirster:
+            player.current_hp = min(player.hp, player.current_hp + damage / 20)
         if self.health <= 0:
+            if player.has_heartguard:
+                player.hp += 1
+            if player.has_amulet:
+                player.current_hp = min(player.hp, player.current_hp + 10)
             self.kill()
 
     def draw(self, surface):
@@ -87,7 +106,7 @@ class Spider(pygame.sprite.Sprite):
                 self.animation_loop = 1
                 self.animation_pos += 1
                 if self.animation_pos == len(self.game.data.spider.get('attacking')):
-                    CobWeb(self.game, (self.x, self.y), self.damage)
+                    CobWeb(self.game, (self.x, self.y), self.damage, self)
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
@@ -112,8 +131,9 @@ class Spider(pygame.sprite.Sprite):
 
 
 class CobWeb(pygame.sprite.Sprite):
-    def __init__(self, game, position, damage):
+    def __init__(self, game, position, damage, spider):
         self.game = game
+        self.spider = spider
         pygame.sprite.Sprite.__init__(self, self.game.attacks)
 
         self.image = self.game.data.spider.get('web')[0]
@@ -137,7 +157,25 @@ class CobWeb(pygame.sprite.Sprite):
             self.animation_pos += 1
             if self.animation_pos == 11:
                 if pygame.sprite.collide_rect(self, self.game.player):
-                    self.game.player.take_damage(self.damage)
+                    room = self.game.player.get_room()
+                    if room not in self.game.player.shield_used_rooms and self.game.player.has_shield:
+                        self.game.player.shield_used_rooms.append(room)
+                    else:
+                        if self.game.player.has_phantom:
+                            if random.randint(1, 5) == 1:
+                                pass
+                            else:
+                                self.game.player.take_damage(self.damage)
+                        else:
+                            self.game.player.take_damage(self.damage)
+                    if self.game.player.has_thornforge:
+                        self.spider.register_hit(self.game.player, self.damage * 0.3)
+                    if self.game.player.has_retaliation:
+                        if room not in self.game.player.retaliation_used_rooms:
+                            self.game.player.retaliation_used_rooms.append(room)
+                            trigger_ripple((self.game.player.x + 23, self.game.player.y + 23))
+                            for enemy in self.game.enemies:
+                                enemy.register_hit(self.game.player, self.damage * 5)
                 self.kill()
                 return
             self.image = self.game.data.spider.get('web')[self.animation_pos // 2]

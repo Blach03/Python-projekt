@@ -66,7 +66,7 @@ class Bullet(pygame.sprite.Sprite):
         enemy_hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
         if enemy_hits:
             for enemy in enemy_hits:
-                enemy.register_hit()
+                enemy.register_hit(self.game.player, self.game.player.attack)
             register_hit()
 
 
@@ -112,4 +112,4 @@ class Attack(pygame.sprite.Sprite):
         if hits:
             self.collided = True
             for enemy in hits:
-                enemy.register_hit()
+                enemy.register_hit(self.game.player, self.game.player.attack)

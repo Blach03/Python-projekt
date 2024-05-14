@@ -3,7 +3,7 @@ from src.sprites.blocks import Wall, Ground, CobWeb
 from src.sprites.shopItem import ShopItem
 import random
 from config import *
-from enemies import Spider
+from src.sprites.enemies import Spider
 
 def build_tile(game, tile):
     for i, row in enumerate(tile):
