@@ -65,6 +65,10 @@ class Player(pygame.sprite.Sprite):
         self.has_disc = False
         self.has_amulet = False
         self.has_wyrmblade = False
+        self.has_scythe = False
+        self.scythe_used_on = []
+        self.has_polearm = False
+        self.has_edge = False
 
         self.boost_given = False
 

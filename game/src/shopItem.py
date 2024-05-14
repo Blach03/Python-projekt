@@ -68,6 +68,16 @@ class ShopItem(pygame.sprite.Sprite):
             if self.item.name == "Phantom boots":
                 player.has_phantom = True
 
+            if self.item.name == "Scythe":
+                player.has_scythe = True
+
+            if self.item.name == "Polearm":
+                player.has_polearm = True
+
+            if self.item.name == "Guardian's Edge":
+                player.has_edge = True
+
+        
             if player.has_vorpal and not player.boost_given:
                 player.attack = player.attack * 1.2
                 player.boost_given = True

@@ -15,7 +15,7 @@ class Spider(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = self.x, self.y
 
         self.x_change, self.y_change = 0, 0
-        self.start_health = self.game.data.spider.get('start_health') * self.game.difficulty * 20
+        self.start_health = self.game.data.spider.get('start_health') * self.game.difficulty * 40
         self.health = self.start_health
         self.facing = 'right'
 
@@ -58,6 +58,16 @@ class Spider(pygame.sprite.Sprite):
         self.y_change *= random.randint(5, 15) / 10
 
     def register_hit(self, player, damage):
+        if player.has_scythe and self not in player.scythe_used_on:
+            damage = damage * 3
+            player.scythe_used_on.append(self)
+
+        if player.has_polearm and random.randint(1,10) < 4:
+            damage = damage * 2
+
+        if player.has_edge and player.current_hp > self.health:
+            damage = damage * 1.25
+
         if player.has_wyrmblade:
             self.health -= (damage + self.health / 20)
         else:
@@ -151,7 +161,13 @@ class CobWeb(pygame.sprite.Sprite):
                     if room not in self.game.player.shield_used_rooms and self.game.player.has_shield:
                         self.game.player.shield_used_rooms.append(room)
                     else:
-                        self.game.player.take_damage(self.damage)
+                        if self.game.player.has_phantom:
+                            if random.randint(1, 5) == 1:
+                                pass
+                            else:
+                                self.game.player.take_damage(self.damage)
+                        else:
+                            self.game.player.take_damage(self.damage)
                     if self.game.player.has_thornforge:
                         self.spider.register_hit(self.game.player, self.damage * 0.3)
                     if self.game.player.has_retaliation:
