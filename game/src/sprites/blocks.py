@@ -1,6 +1,6 @@
 import pygame
 from random import randint
-from src.config import *
+from game.src.config import *
 
 
 class Wall(pygame.sprite.Sprite):

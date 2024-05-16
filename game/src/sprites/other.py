@@ -1,5 +1,5 @@
 import pygame
-from src.config import *
+from game.src.config import *
 import math
 
 

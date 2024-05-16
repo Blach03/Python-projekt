@@ -1,8 +1,9 @@
 import random
 
 import pygame
-from src.sprites.player import collide_blocks
-from src.player_info import trigger_ripple
+from game.src.sprites.player import collide_blocks
+from game.src.player_info import trigger_ripple
+
 
 class Spider(pygame.sprite.Sprite):
     def __init__(self, game, position):
@@ -105,7 +106,7 @@ class Spider(pygame.sprite.Sprite):
             if self.animation_loop >= 10:
                 self.animation_loop = 1
                 self.animation_pos += 1
-                if self.animation_pos == len(self.game.data.spider.get('attacking')):
+                if self.animation_pos >= len(self.game.data.spider.get('attacking')):
                     CobWeb(self.game, (self.x, self.y), self.damage, self)
                     self.damage_cooldown = 1
                     self.shooting = False
@@ -116,7 +117,7 @@ class Spider(pygame.sprite.Sprite):
             if self.animation_loop >= 10:
                 self.animation_loop = 1
                 self.animation_pos += 1
-                if self.animation_pos == 5:
+                if self.animation_pos >= len(self.game.data.spider.get('standing')):
                     self.animation_pos = 0
             self.image = self.game.data.spider.get('standing')[self.animation_pos] if self.facing == 'left' else \
                 pygame.transform.flip(self.game.data.spider.get('standing')[self.animation_pos], True, False)
@@ -124,7 +125,7 @@ class Spider(pygame.sprite.Sprite):
             if self.animation_loop >= 10:
                 self.animation_loop = 1
                 self.animation_pos += 1
-                if self.animation_pos == 6:
+                if self.animation_pos >= len(self.game.data.spider.get('walking')):
                     self.animation_pos = 0
                 self.image = self.game.data.spider.get('walking')[self.animation_pos] if self.facing == 'left' else \
                     pygame.transform.flip(self.game.data.spider.get('walking')[self.animation_pos], True, False)

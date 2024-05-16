@@ -1,8 +1,8 @@
 import pygame
 import random
-from src.config import TILE_SIZE
-from src.items import all_items
-from src.sprites.blocks import Wall
+from game.src.config import TILE_SIZE
+from game.src.items import all_items
+from game.src.sprites.blocks import Wall
 
 
 class ShopItem(pygame.sprite.Sprite):

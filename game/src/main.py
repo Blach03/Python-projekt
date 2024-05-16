@@ -1,13 +1,12 @@
 import sys
+import pygame
 
-
-from items import *
 from config import *
 from player_info import draw_player_info, draw_item_info, draw_gold_hp, draw_circle, draw_ripples
-from src.sprites.player import Player
-from src.sprites.other import DrawSpriteGroup, Button, DarkOverlay
-from src.sprites.enemies import Spider
-from src.sprites.shopItem import ShopItem
+from sprites.player import Player
+from sprites.other import DrawSpriteGroup, Button, DarkOverlay
+from sprites.shopItem import ShopItem
+from items_interaction import display_shop_item
 from generate import generate_map, generate_rooms
 from tile_builder import build_tile, tile_to_change
 from map import update_map, draw_map
@@ -153,7 +152,6 @@ class Game:
             self.screen.blit(quit_button.image, quit_button.rect)
             self.clock.tick(60)
             pygame.display.update()
-
 
 
 play_again = True

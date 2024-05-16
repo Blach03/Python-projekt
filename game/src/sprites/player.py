@@ -1,9 +1,10 @@
 import math
-from src.config import *
-from src.sprites.props import Bullet, Attack
-from src.player_info import *
-from src.sprites.other import defence
-from src.items import Potion
+from game.src.config import *
+from game.src.sprites.props import Bullet, Attack
+from game.src.player_info import *
+from game.src.sprites.other import defence
+from game.src.items import Potion
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, game, position, start_room_pos):
@@ -72,7 +73,6 @@ class Player(pygame.sprite.Sprite):
 
         self.boost_given = False
 
-
     def update(self):
         self.interaction()
         self.animate()
@@ -95,16 +95,16 @@ class Player(pygame.sprite.Sprite):
     def interaction(self):
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
             self.y_change -= self.movement_speed
             self.facing = 'up'
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.y_change += self.movement_speed
             self.facing = 'down'
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.x_change += self.movement_speed
             self.facing = 'right'
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.x_change -= self.movement_speed
             self.facing = 'left'
 

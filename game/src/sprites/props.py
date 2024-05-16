@@ -1,6 +1,6 @@
 import pygame
 import math
-from src.config import *
+from game.src.config import *
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -66,7 +66,7 @@ class Bullet(pygame.sprite.Sprite):
         enemy_hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
         if enemy_hits:
             for enemy in enemy_hits:
-                enemy.register_hit(self.game.player, self.game.player.attack)
+                enemy.register_hit(self.game.player, self.game.player.attack * 2)
             register_hit()
 
 
