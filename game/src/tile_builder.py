@@ -6,7 +6,7 @@ from config import *
 from sprites.enemies import Spider
 
 
-def build_tile(game, tile):
+def build_tile(game, tile: list[list[int]]) -> None:
     for i, row in enumerate(tile):
         for j, elem in enumerate(row):
             if elem == '.':
@@ -22,9 +22,9 @@ def build_tile(game, tile):
                 CobWeb(game, j, i)
 
 
-def tile_to_change(game):
+def tile_to_change(game) -> None:
 
-    def change_tile(tile_before, room_x, room_y, x, y):
+    def change_tile(tile_before: list[list[int]], room_x: int, room_y: int, x: int, y: int) -> None:
         game.enemies.empty()
         game.ground.empty()
         game.walls.empty()

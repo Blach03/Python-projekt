@@ -1,22 +1,5 @@
 import pygame
-from config import WIN_HEIGHT, WIN_WIDTH
-
-PLAYER_INFO_WIDTH = 585
-PLAYER_INFO_HEIGHT = 430
-PLAYER_INFO_COLOR = (153, 153, 102, 200)
-
-SEGMENT_BAR_WIDTH = 20
-SEGMENT_BAR_HEIGHT = 20
-SEGMENT_BAR_SPACING = 3
-SEGMENT_BAR_COLOR = (0, 255, 0, 200)
-
-GRID_WIDTH = 10
-GRID_HEIGHT = 3
-GRID_CELL_SIZE = 50
-GRID_SPACING = 5
-
-ITEM_INFO_WIDTH = 300
-ITEM_INFO_HEIGHT = 200
+from config import *
 
 
 def draw_player_info(game):
@@ -26,56 +9,29 @@ def draw_player_info(game):
 
         font = pygame.font.Font(None, 32)
         y_offset = 10
+        x_offset = 20
 
-        text = font.render("Player Attributes:", True, (0, 0, 0))
-        player_info_surface.blit(text, (10, y_offset))
+        def blit_attribute_bar(stat_name, value, max_value):
+            nonlocal y_offset
+            player_info_surface.blit(font.render(f"{stat_name}: {value}", True, (0, 0, 0)),
+                                     (x_offset, y_offset))
+            y_offset += 35
+            draw_segment_bar(player_info_surface, (x_offset, y_offset), min(1, value / max_value))
+            y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
+
+        player_info_surface.blit(font.render("Player Attributes:", True, (0, 0, 0)), (10, y_offset))
         y_offset += 35
 
-        text = font.render("Attack: {}".format(game.player.attack), True, (0, 0, 0))
-        player_info_surface.blit(text, (20, y_offset))
-        y_offset += 35
-
-        draw_segment_bar(player_info_surface, (20, y_offset), min(1, game.player.attack / 200))
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
-
-        text = font.render("HP: {}".format(game.player.hp), True, (0, 0, 0))
-        player_info_surface.blit(text, (20, y_offset))
-        y_offset += 35
-
-        draw_segment_bar(player_info_surface, (20, y_offset), min(1, game.player.hp / 1000))
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
-
-        text = font.render("Defense: {}".format(game.player.defense), True, (0, 0, 0))
-        player_info_surface.blit(text, (20, y_offset))
-        y_offset += 35
-
-        draw_segment_bar(player_info_surface, (20, y_offset), min(1, game.player.defense / 50))
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
-
+        blit_attribute_bar("Attack", game.player.attack, 200)
+        blit_attribute_bar("HP", game.player.hp, 1000)
+        blit_attribute_bar("Defense", game.player.defense, 50)
         y_offset = 45
-        text = font.render("Range: {}".format(game.player.range), True, (0, 0, 0))
-        player_info_surface.blit(text, (320, y_offset))
-        y_offset += 35
+        x_offset = 320
+        blit_attribute_bar("Range", game.player.range, 2)
+        blit_attribute_bar("Attack Speed", game.player.attack_speed, 3)
+        blit_attribute_bar("Movement Speed", game.player.movement_speed, 8)
 
-        draw_segment_bar(player_info_surface, (320, y_offset), min(1, game.player.range / 2))
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
-
-        text = font.render("Attack Speed: {}".format(game.player.attack_speed), True, (0, 0, 0))
-        player_info_surface.blit(text, (320, y_offset))
-        y_offset += 35
-
-        draw_segment_bar(player_info_surface, (320, y_offset), min(1, game.player.range / 3))
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
-
-        text = font.render("Movement Speed: {}".format(game.player.movement_speed), True, (0, 0, 0))
-        player_info_surface.blit(text, (320, y_offset))
-        y_offset += 35
-
-        draw_segment_bar(player_info_surface, (320, y_offset), min(1, game.player.movement_speed / 8))
-        y_offset += SEGMENT_BAR_HEIGHT + SEGMENT_BAR_SPACING
-
-        text = font.render("Inventory:", True, (0, 0, 0))
-        player_info_surface.blit(text, (10, y_offset))
+        player_info_surface.blit(font.render("Inventory:", True, (0, 0, 0)), (10, y_offset))
         y_offset += 30
 
         draw_inventory_grid(player_info_surface, (20, y_offset), game.player)
@@ -108,9 +64,9 @@ def draw_segment_bar(surface, position, percentage):
 
 def draw_inventory_grid(surface, position, player):
     x, y = position
-    
+
     for row in range(GRID_HEIGHT):
-        for col in range(GRID_WIDTH - 2): 
+        for col in range(GRID_WIDTH - 2):
             pygame.draw.rect(surface, (179, 179, 0, 230), (
                 x + (GRID_CELL_SIZE + GRID_SPACING) * col, y + (GRID_CELL_SIZE + GRID_SPACING) * row,
                 GRID_CELL_SIZE, GRID_CELL_SIZE))
@@ -132,7 +88,7 @@ def draw_inventory_grid(surface, position, player):
             item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
 
             surface.blit(item_image, (item_x, item_y))
-    
+
     for item_index, potion in enumerate(player.potions):
         if hasattr(potion, 'image'):
             potion_image = pygame.image.load(potion.image)
@@ -209,7 +165,8 @@ def draw_item_info(game):
                 rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
 
                 screen.blit(border_surface, (
-                    (WIN_WIDTH - border_surface.get_width()) // 2, (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
+                    (WIN_WIDTH - border_surface.get_width()) // 2,
+                    (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
 
                 screen.blit(rounded_surface, rounded_surface_rect)
 
@@ -260,7 +217,8 @@ def draw_item_info(game):
                 rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
 
                 screen.blit(border_surface, (
-                    (WIN_WIDTH - border_surface.get_width()) // 2, (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
+                    (WIN_WIDTH - border_surface.get_width()) // 2,
+                    (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
 
                 screen.blit(rounded_surface, rounded_surface_rect)
 
@@ -282,7 +240,8 @@ def draw_item_info(game):
                 rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
 
                 screen.blit(border_surface,
-                            ((WIN_WIDTH - border_surface.get_width()) // 2, (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
+                            ((WIN_WIDTH - border_surface.get_width()) // 2,
+                             (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
 
                 screen.blit(rounded_surface, rounded_surface_rect)
 
@@ -294,7 +253,6 @@ def draw_item_info(game):
                     if pygame.mouse.get_pressed()[0]:
                         if item.count > 0:
                             item.use(game.player)
-        
 
 
 def draw_gold_hp(game):
@@ -325,42 +283,45 @@ def draw_gold_hp(game):
 
 
 def draw_circle(game):
-        screen = game.screen
-        center = (game.player.x + 23, game.player.y + 23)
-        radius = 120
+    screen = game.screen
+    center = (game.player.x + 23, game.player.y + 23)
+    radius = 120
 
-        temp_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA)
-        
-        if game.player.has_disc:
-            
+    temp_surface = pygame.Surface((WIN_WIDTH, WIN_HEIGHT), pygame.SRCALPHA)
+
+    if game.player.has_disc:
+
+        for i in range(radius, 0, -1):
+            color = (255, 255, 0, max(0, (i * 50 // radius)))
+            pygame.draw.circle(temp_surface, color, center, i)
+
+        screen.blit(temp_surface, (0, 0))
+
+        if game.damage_frame_counter % 40 == 0:
+            for enemy in game.enemies:
+                distance = pygame.math.Vector2(enemy.rect.centerx - center[0], enemy.rect.centery - center[1]).length()
+                if distance < radius:
+                    enemy.register_hit(game.player, game.player.attack / 3)
+
+        game.damage_frame_counter += 1
+
+    if game.player.has_shield:
+        room = game.player.get_room()
+        if room not in game.player.shield_used_rooms:
+            radius = 50
             for i in range(radius, 0, -1):
-                color = (255, 255, 0, max(0, (i * 50 // radius)))
+                color = (255, 255, 255, max(0, (i * 50 // radius)))
                 pygame.draw.circle(temp_surface, color, center, i)
-            
+
             screen.blit(temp_surface, (0, 0))
 
-            if game.damage_frame_counter % 40 == 0:
-                for enemy in game.enemies:
-                    distance = pygame.math.Vector2(enemy.rect.centerx - center[0], enemy.rect.centery - center[1]).length()
-                    if distance < radius:
-                        enemy.register_hit(game.player, game.player.attack / 3)
-
-            game.damage_frame_counter += 1
-
-        if game.player.has_shield:
-            room = game.player.get_room()
-            if room not in game.player.shield_used_rooms:
-                radius = 50
-                for i in range(radius, 0, -1):
-                    color = (255, 255, 255, max(0, (i * 50 // radius)))
-                    pygame.draw.circle(temp_surface, color, center, i)
-            
-                screen.blit(temp_surface, (0, 0))
 
 ripples = []
 
+
 def trigger_ripple(center):
     ripples.append([center, 0, 255])
+
 
 def draw_ripples(game):
     for ripple in ripples[:]:
@@ -368,10 +329,10 @@ def draw_ripples(game):
         if alpha <= 0:
             ripples.remove(ripple)
             continue
-        new_radius = radius + 10 
+        new_radius = radius + 10
         new_alpha = max(alpha - 4, 0)
         surface = pygame.Surface((new_radius * 2, new_radius * 2), pygame.SRCALPHA)
-        pygame.draw.circle(surface, (255,0,0) + (new_alpha,), (new_radius, new_radius), new_radius)
+        pygame.draw.circle(surface, (255, 0, 0) + (new_alpha,), (new_radius, new_radius), new_radius)
         surface_rect = surface.get_rect(center=ripple[0])
         game.screen.blit(surface, surface_rect)
         ripple[1] = new_radius

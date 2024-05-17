@@ -79,7 +79,7 @@ class Game:
 
         pygame.display.flip()
 
-    def player_near_shop_item(self):
+    def player_near_shop_item(self) -> ShopItem or None:
         for shop_item in self.attacks:
             if isinstance(shop_item, ShopItem) and shop_item.is_player_near(self.player):
                 return shop_item

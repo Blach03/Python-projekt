@@ -25,7 +25,7 @@ class ShopItem(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x * TILE_SIZE, y * TILE_SIZE
 
-    def is_player_near(self, player):
+    def is_player_near(self, player) -> bool:
         distance = ((player.rect.centerx - self.rect.centerx) ** 2 +
                     (player.rect.centery - self.rect.centery) ** 2) ** 0.5
 

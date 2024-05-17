@@ -2,7 +2,7 @@ from random import randint, choices
 from tile_data import empty, doorway, corner_options, corner_corners, mid_options, mid_corners, shop
 
 
-def generate_map():
+def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
     n = 101
     shops = 0
     map = [[0] * n for _ in range(n)]
@@ -55,7 +55,7 @@ def generate_map():
     return map, start, end
 
 
-def generate_rooms(map):
+def generate_rooms(map: list[list[int]]) -> list[list[int]]:
     n, m = len(map), len(map[0])
     rooms = [[0] * m for _ in range(n)]
     for i in range(n):
@@ -81,7 +81,7 @@ def generate_rooms(map):
     return rooms
 
 
-def generate_room(room):
+def generate_room(room: list[str]) -> list[str]:
 
     def add_shape(j_length, k_length):
         for j in range(j_length):

@@ -89,7 +89,7 @@ class Spider(pygame.sprite.Sprite):
             pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
         surface.blit(self.image, self.rect, None, 0)
 
-    def calculate_distance(self):
+    def calculate_distance(self) -> float:
         distance = ((self.game.player.rect.centerx - self.rect.centerx) ** 2 +
                     (self.game.player.rect.centery - self.rect.centery) ** 2) ** 0.5
         return distance < 100
@@ -100,7 +100,7 @@ class Spider(pygame.sprite.Sprite):
             self.animation_loop = 1
             self.animation_pos = 0
 
-    def animate(self):
+    def animate(self) -> None:
 
         if self.shooting:
             if self.animation_loop >= 10:

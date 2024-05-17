@@ -34,7 +34,7 @@ class Button:
         self.image.blit(text, text_rect)
         self.clicked = True
 
-    def is_pressed(self, pos, pressed):
+    def is_pressed(self, pos, pressed) -> bool:
         is_pressed = self.rect.collidepoint(pos) and pressed and not self.clicked
         self.clicked = True
         if not pressed:
@@ -42,7 +42,7 @@ class Button:
         return is_pressed
 
 
-def defence(defence):
+def defence(defence) -> float:
     percentage = (22.97 * math.log(0.162 * defence + 1.00)) / 100
     percentage = min(percentage, 0.95)
     return percentage

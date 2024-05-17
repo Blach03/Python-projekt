@@ -146,8 +146,8 @@ class Player(pygame.sprite.Sprite):
 
         self.previous_mouse_pressed = mouse_buttons[0]
 
-    def get_room(self):
-        return self.room_x, self.room_y
+    def get_room(self) -> tuple[int, int]:
+        return int(self.room_x), int(self.room_y)
 
     def animate(self):
         if self.x_change == 0 and self.y_change == 0:
@@ -163,7 +163,7 @@ class Player(pygame.sprite.Sprite):
         if self.current_hp <= 0:
             self.game.playing = False
 
-    def get_clicked_inventory_slot(self, mouse_pos):
+    def get_clicked_inventory_slot(self, mouse_pos) -> int or None:
         x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
 
         for item_index in range(24):
