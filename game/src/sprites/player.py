@@ -1,9 +1,7 @@
 import math
-from game.src.config import *
 from game.src.sprites.props import Bullet, Attack
 from game.src.player_info import *
 from game.src.sprites.other import defence
-from game.src.items import Potion
 
 
 class Player(pygame.sprite.Sprite):
@@ -51,7 +49,7 @@ class Player(pygame.sprite.Sprite):
         self.gold = 100000  # for testing
 
         self.items = []
-        self.potions = [Potion("Healing potion", '../resources/health_potion.png', 'Heals 50 HP', 3, 0, 50), Potion("Defence potion", '../resources/defence_potion.png', 'Gives 20 defence for 3 min', 1, 0, 20), Potion("Attack potion", '../resources/attack_potion.png', 'Gives 30 attack for 3 min', 1, 0, 30), Potion("Regeneration potion", '../resources/regen_potion.png', 'Restores 1 HP per secound for 1 min', 1, 0, 1)]
+        self.potions = game.data.potions
 
         self.has_heartguard = False
         self.has_wings = False
@@ -83,8 +81,8 @@ class Player(pygame.sprite.Sprite):
         self.y += self.y_change
         self.rect.y = self.y
         collide_blocks(self, 'y')
-
         self.x_change, self.y_change = 0, 0
+
         self.last_shooting += 1
         if self.last_shooting > 10000:
             self.last_shooting = 1
@@ -132,7 +130,7 @@ class Player(pygame.sprite.Sprite):
             self.last_shooting = 1
 
         if self.previous_mouse_pressed:
-            self.clicked_slot = self.get_clicked_inventory_slot(mouse_pos)
+            self.clicked_slot = get_clicked_inventory_slot(mouse_pos)
             if self.clicked_slot is not None:
                 if not self.item_open_pressed:
                     self.item_open_pressed = True
@@ -163,38 +161,36 @@ class Player(pygame.sprite.Sprite):
         if self.current_hp <= 0:
             self.game.playing = False
 
-    def get_clicked_inventory_slot(self, mouse_pos) -> int or None:
-        x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
 
-        for item_index in range(24):
-            item_row = item_index // 8
-            item_col = item_index % 8
+def get_clicked_inventory_slot(mouse_pos) -> int or None:
+    x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
+
+    def check_items(start, end, get_row, get_col):
+        for item_index in range(start, end):
+            item_row = get_row(item_index)
+            item_col = get_col(item_index)
             item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
             item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
 
             if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
                 return item_index
 
-        for item_index in range(24, 30):
-            item_row = (item_index - 24) // 2
-            item_col = (item_index - 24) % 2 + 8
-            item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
-            item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
+    items1 = check_items(0, 24, lambda i: i // 8, lambda i: i % 8)
+    if items1 is not None:
+        return items1
 
-            if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
-                return item_index
+    items2 = check_items(24, 30, lambda i: (i - 24) // 2, lambda i: (i - 24) % 2 + 8)
+    if items2 is not None:
+        return items2
 
-        return None
+    return None
 
 
 def collide_blocks(sprite, direction):
     has_wings = getattr(sprite, 'has_wings', False)
 
-    if has_wings:
-        if (sprite.rect.x < TILE_SIZE or sprite.rect.right > WIN_WIDTH - TILE_SIZE or
-                sprite.rect.y < TILE_SIZE or sprite.rect.bottom > WIN_HEIGHT - TILE_SIZE):
-            handle_collision(sprite, direction)
-    else:
+    if not has_wings or (sprite.rect.x < TILE_SIZE or sprite.rect.right > WIN_WIDTH - TILE_SIZE or
+                         sprite.rect.y < TILE_SIZE or sprite.rect.bottom > WIN_HEIGHT - TILE_SIZE):
         handle_collision(sprite, direction)
 
 

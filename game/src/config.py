@@ -7,11 +7,21 @@ OVERLAY_COVERAGE = 100  # [0, 255]
 # MAP CONFIGURATION
 MAP_TILE_SIZE = 32
 MAP_BORDER_SIZE = 8
-MAP_IMAGE_PATHS = ((0, "../resources/empty_icon.png"),
-                   (1, "../resources/room_icon.png"),
-                   (1.2, "../resources/shop_icon.png"),
-                   (2, "../resources/boss_icon.png"),
-                   (3, "../resources/player_icon.png"))
+MAP_IMAGE_PATHS = ((0, "../resources/imgs/empty_icon.png"),
+                   (1, "../resources/imgs/room_icon.png"),
+                   (1.2, "../resources/imgs/shop_icon.png"),
+                   (2, "../resources/imgs/boss_icon.png"),
+                   (3, "../resources/imgs/player_icon.png"))
+
+ITEMS_DATA = "../resources/json/items.json"
+POTION_DATA = "../resources/json/potions.json"
+ROOMS_DATA = "../resources/json/rooms.json"
+
+CHARACTER_SPRITE = '../resources/imgs/character.png'
+BLOCKS_SPRITE = '../resources/imgs/blocks.png'
+SPIDER_SPRITE = '../resources/imgs/spider.png'
+BULLET_SPRITE = '../resources/imgs/bullets.png'
+ATTACK_SPRITE = '../resources/imgs/attack.png'
 
 # COLORS
 BLACK = (0, 0, 0)

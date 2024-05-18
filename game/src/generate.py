@@ -1,5 +1,8 @@
 from random import randint, choices
-from tile_data import empty, doorway, corner_options, corner_corners, mid_options, mid_corners, shop
+import json
+from config import ROOMS_DATA
+
+data = json.load(open(ROOMS_DATA))
 
 
 def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
@@ -62,16 +65,16 @@ def generate_rooms(map: list[list[int]]) -> list[list[int]]:
         for j in range(m):
             if map[i][j] >= 1:
                 if map[i][j] == 1.2:
-                    tile = shop.copy()
+                    tile = data['shop'].copy()
                 else:
-                    tile = empty.copy()
+                    tile = data['empty'].copy()
                 if map[i][j - 1] >= 1:
                     for k in range(6, 9):
                         tile[k] = "." + tile[k][1:]
                 if map[i - 1][j] >= 1:
-                    tile[0] = doorway
+                    tile[0] = data['doorway']
                 if i + 1 < n and map[i + 1][j] >= 1:
-                    tile[-1] = doorway
+                    tile[-1] = data['doorway']
                 if j + 1 < m and map[i][j + 1] >= 1:
                     for k in range(6, 9):
                         tile[k] = tile[k][:-1] + "."
@@ -92,14 +95,14 @@ def generate_room(room: list[str]) -> list[str]:
 
     for i in range(4):
         x = randint(0, 3)
-        shape = corner_options[i][x]
-        coords = corner_corners[i]
+        shape = data['corner_options'][i][x]
+        coords = data['corner_corners'][i]
         add_shape(5, 5)
 
     for i in range(4):
         x = randint(0, 3) if i % 2 == 0 else randint(0, 2)
-        shape = mid_options[i % 2][x]
-        coords = mid_corners[i]
+        shape = data['mid_options'][i % 2][x]
+        coords = data['mid_corners'][i]
         add_shape(5, 4) if i % 2 == 0 else add_shape(3, 5)
 
     return room

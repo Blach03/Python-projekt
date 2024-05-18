@@ -1,5 +1,7 @@
 import pygame
-from config import TILE_SIZE, BLACK, PLAYER_SIZE
+import json
+from config import *
+from game.src.items import Potion
 
 
 class SpriteSheet:
@@ -15,11 +17,11 @@ class SpriteSheet:
 
 class Data:
     def __init__(self):
-        self.character_sprite_sheet = SpriteSheet('../resources/character.png')
-        self.blocks_sprite_sheet = SpriteSheet('../resources/blocks.png')
-        self.spider_sprite_sheet = SpriteSheet('../resources/spider.png')
-        self.bullets_sprite_sheet = SpriteSheet('../resources/bullets.png')
-        self.attack_sprite_sheet = SpriteSheet('../resources/attack.png')
+        self.character_sprite_sheet = SpriteSheet(CHARACTER_SPRITE)
+        self.blocks_sprite_sheet = SpriteSheet(BLOCKS_SPRITE)
+        self.spider_sprite_sheet = SpriteSheet(SPIDER_SPRITE)
+        self.bullets_sprite_sheet = SpriteSheet(BULLET_SPRITE)
+        self.attack_sprite_sheet = SpriteSheet(ATTACK_SPRITE)
 
         self.player_animation_positions = {
             'up': (self.character_sprite_sheet.get_sprite(0, 32, 32, 32, PLAYER_SIZE),
@@ -88,7 +90,8 @@ class Data:
                     self.spider_sprite_sheet.get_sprite(49, 30, 23, 20, (46, 40)),
                     self.spider_sprite_sheet.get_sprite(73, 30, 23, 20, (46, 40)),
                     self.spider_sprite_sheet.get_sprite(97, 30, 23, 20, (46, 40)),
-                    self.spider_sprite_sheet.get_sprite(121, 30, 23, 20, (46, 40)),
-
-            )
+                    self.spider_sprite_sheet.get_sprite(121, 30, 23, 20, (46, 40)))
         }
+
+        start_potions = json.load(open(POTION_DATA))
+        self.potions = [Potion.from_dict_to_player_on_start(start_potions[i]) for i in range(4)]

@@ -1,0 +1,38 @@
+[
+   {
+      "name":"Healing potion",
+      "description":"Heals 50 HP",
+      "image":"../resources/imgs/health_potion.png",
+      "count":5,
+      "start_count":3,
+      "price":750,
+      "stat":50
+   },
+   {
+      "name":"Defence potion",
+      "description":"Gives 20 defence for 3 min",
+      "image":"../resources/imgs/defence_potion.png",
+      "count":3,
+      "start_count":1,
+      "price":750,
+      "stat":20
+   },
+   {
+      "name":"Attack potion",
+      "description":"Gives 30 attack for 3 min",
+      "image":"../resources/imgs/attack_potion.png",
+      "count":3,
+      "start_count":1,
+      "price":750,
+      "stat":30
+   },
+   {
+      "name":"Regeneration potion",
+      "description":"Restores 1 HP per secound for 1 min",
+      "image":"../resources/imgs/regen_potion.png",
+      "count":3,
+      "start_count":1,
+      "price":750,
+      "stat":1
+   }
+]

@@ -96,7 +96,7 @@ class Game:
     def intro_screen(self):
         intro = True
 
-        intro_background = pygame.image.load('../resources/intro_background.jpg')
+        intro_background = pygame.image.load('../resources/imgs/intro_background.jpg')
         intro_background = pygame.transform.scale(intro_background, (1440, 720))
 
         title_font = pygame.font.SysFont('chiller', 120)
@@ -123,7 +123,7 @@ class Game:
     def game_over(self):
         global play_again
         outro = True
-        background = pygame.image.load('../resources/end_background.png')
+        background = pygame.image.load('../resources/imgs/end_background.png')
         title_font = pygame.font.SysFont('chiller', 120)
         title = title_font.render('Game over', True, MID_RED)
         title_rect = title.get_rect(center=(WIN_WIDTH / 2, WIN_HEIGHT * 0.35))

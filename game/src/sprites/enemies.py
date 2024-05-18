@@ -60,27 +60,30 @@ class Spider(pygame.sprite.Sprite):
 
     def register_hit(self, player, damage):
         if player.has_scythe and self not in player.scythe_used_on:
-            damage = damage * 3
             player.scythe_used_on.append(self)
+            damage *= 3
 
-        if player.has_polearm and random.randint(1,10) < 4:
-            damage = damage * 2
+        if player.has_polearm and random.randint(1, 10) < 4:
+            damage *= 2
 
         if player.has_edge and player.current_hp > self.health:
-            damage = damage * 1.25
+            damage *= 1.25
 
         if player.has_wyrmblade:
-            self.health -= (damage + self.health / 20)
-        else:
-            self.health -= damage
+            damage += self.health / 20
+
         if player.has_soulthirster:
             player.current_hp = min(player.hp, player.current_hp + damage / 20)
+
+        self.health -= damage
+
         if self.health <= 0:
+            self.kill()
+
             if player.has_heartguard:
                 player.hp += 1
             if player.has_amulet:
                 player.current_hp = min(player.hp, player.current_hp + 10)
-            self.kill()
 
     def draw(self, surface):
         if self.health != self.start_health:
@@ -162,12 +165,7 @@ class CobWeb(pygame.sprite.Sprite):
                     if room not in self.game.player.shield_used_rooms and self.game.player.has_shield:
                         self.game.player.shield_used_rooms.append(room)
                     else:
-                        if self.game.player.has_phantom:
-                            if random.randint(1, 5) == 1:
-                                pass
-                            else:
-                                self.game.player.take_damage(self.damage)
-                        else:
+                        if not self.game.player.has_phantom or random.randint(1, 5) != 1:
                             self.game.player.take_damage(self.damage)
                     if self.game.player.has_thornforge:
                         self.spider.register_hit(self.game.player, self.damage * 0.3)
