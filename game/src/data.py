@@ -1,6 +1,8 @@
-import pygame
 import json
+
+import pygame
 from config import *
+
 from game.src.items import Potion
 
 
@@ -17,81 +19,82 @@ class SpriteSheet:
 
 class Data:
     def __init__(self):
-        self.character_sprite_sheet = SpriteSheet(CHARACTER_SPRITE)
-        self.blocks_sprite_sheet = SpriteSheet(BLOCKS_SPRITE)
-        self.spider_sprite_sheet = SpriteSheet(SPIDER_SPRITE)
-        self.bullets_sprite_sheet = SpriteSheet(BULLET_SPRITE)
-        self.attack_sprite_sheet = SpriteSheet(ATTACK_SPRITE)
+        self.player_animation_positions = None
+        self.get_character_sprites()
 
+        self.bullet_flying = None
+        self.bullet_blowing = None
+        self.get_bullet_sprites()
+
+        self.attacks = None
+        self.get_attacks_sprites()
+
+        self.blocks = None
+        self.get_blocks_sprites()
+
+        self.spider = None
+        self.get_spider_sprites()
+
+        self.potions = None
+        self.get_potion_icons()
+
+    def get_character_sprites(self):
+        sprite_sheet = SpriteSheet(CHARACTER_SPRITE)
+        xs = (0, 32, 65)
         self.player_animation_positions = {
-            'up': (self.character_sprite_sheet.get_sprite(0, 32, 32, 32, PLAYER_SIZE),
-                   self.character_sprite_sheet.get_sprite(32, 32, 32, 32, PLAYER_SIZE),
-                   self.character_sprite_sheet.get_sprite(65, 32, 32, 32, PLAYER_SIZE)),
-            'down': (self.character_sprite_sheet.get_sprite(0, 0, 32, 32, PLAYER_SIZE),
-                     self.character_sprite_sheet.get_sprite(32, 0, 32, 32, PLAYER_SIZE),
-                     self.character_sprite_sheet.get_sprite(65, 0, 32, 32, PLAYER_SIZE)),
-            'right': (self.character_sprite_sheet.get_sprite(0, 64, 32, 32, PLAYER_SIZE),
-                      self.character_sprite_sheet.get_sprite(32, 64, 32, 32, PLAYER_SIZE),
-                      self.character_sprite_sheet.get_sprite(65, 64, 32, 32, PLAYER_SIZE)),
-            'left': (self.character_sprite_sheet.get_sprite(0, 96, 32, 32, PLAYER_SIZE),
-                     self.character_sprite_sheet.get_sprite(32, 96, 32, 32, PLAYER_SIZE),
-                     self.character_sprite_sheet.get_sprite(65, 96, 32, 32, PLAYER_SIZE))
+            "up": [sprite_sheet.get_sprite(x, 32, 32, 32, PLAYER_SIZE) for x in xs],
+            "down": [sprite_sheet.get_sprite(x, 0, 32, 32, PLAYER_SIZE) for x in xs],
+            "right": [sprite_sheet.get_sprite(x, 64, 32, 32, PLAYER_SIZE) for x in xs],
+            "left": [sprite_sheet.get_sprite(x, 96, 32, 32, PLAYER_SIZE) for x in xs],
         }
 
-        self.bullet_flying = (
-            self.bullets_sprite_sheet.get_sprite(0, 0, 8, 7, (24, 21)),
-            self.bullets_sprite_sheet.get_sprite(8, 0, 8, 7, (24, 21)),
-            self.bullets_sprite_sheet.get_sprite(16, 0, 8, 7, (24, 21)),
-            self.bullets_sprite_sheet.get_sprite(24, 0, 8, 7, (24, 21)),
-        )
-        self.bullet_blowing = (
-            self.bullets_sprite_sheet.get_sprite(0, 7, 8, 8, (24, 24)),
-            self.bullets_sprite_sheet.get_sprite(8, 7, 8, 8, (24, 24)),
-            self.bullets_sprite_sheet.get_sprite(16, 7, 8, 8, (24, 24)),
-            self.bullets_sprite_sheet.get_sprite(24, 7, 8, 8, (24, 24))
-        )
+    def get_bullet_sprites(self):
+        sprite_sheet = SpriteSheet(BULLET_SPRITE)
+        self.bullet_flying = [
+            sprite_sheet.get_sprite(i * 8, 0, 8, 7, (24, 21)) for i in range(4)
+        ]
+        self.bullet_blowing = [
+            sprite_sheet.get_sprite(i * 8, 7, 8, 8, (24, 24)) for i in range(4)
+        ]
 
-        self.attacks = (
-            self.attack_sprite_sheet.get_sprite(0, 0, 32, 32),
-            self.attack_sprite_sheet.get_sprite(32, 0, 32, 32),
-            self.attack_sprite_sheet.get_sprite(64, 0, 32, 32),
-            self.attack_sprite_sheet.get_sprite(96, 0, 32, 32),
-            self.attack_sprite_sheet.get_sprite(128, 0, 32, 32)
-        )
+    def get_attacks_sprites(self):
+        sprite_sheet = SpriteSheet(ATTACK_SPRITE)
+        self.attacks = [
+            sprite_sheet.get_sprite(i * 32, 0, 32, 32) for i in range(4 + 1)
+        ]
 
+    def get_blocks_sprites(self):
+        sprite_sheet = SpriteSheet(BLOCKS_SPRITE)
         self.blocks = (
-            self.blocks_sprite_sheet.get_sprite(0, 0, 16, 16),  # dark brick
-            self.blocks_sprite_sheet.get_sprite(16, 0, 16, 16),  # broken dark brick
-            self.blocks_sprite_sheet.get_sprite(32, 16, 16, 16),  # cobblestone
-            self.blocks_sprite_sheet.get_sprite(48, 16, 16, 16),  # mossy cobblestone
-            self.blocks_sprite_sheet.get_sprite(64, 0, 16, 16, (16, 16))  # cobweb
+            sprite_sheet.get_sprite(0, 0, 16, 16),  # dark brick
+            sprite_sheet.get_sprite(16, 0, 16, 16),  # broken dark brick
+            sprite_sheet.get_sprite(32, 16, 16, 16),  # cobblestone
+            sprite_sheet.get_sprite(48, 16, 16, 16),  # mossy cobblestone
+            sprite_sheet.get_sprite(64, 0, 16, 16, (16, 16)),  # cobweb
         )
 
+    def get_spider_sprites(self):
+        sprite_sheet = SpriteSheet(SPIDER_SPRITE)
         self.spider = {
-            'start_health': 7,
-            'damage': 10,
-            'standing': (self.spider_sprite_sheet.get_sprite(0, 0, 14, 9, (42, 27)),
-                         self.spider_sprite_sheet.get_sprite(15, 0, 14, 9, (42, 27)),
-                         self.spider_sprite_sheet.get_sprite(30, 0, 14, 9, (42, 27)),
-                         self.spider_sprite_sheet.get_sprite(45, 0, 14, 9, (42, 27)),
-                         self.spider_sprite_sheet.get_sprite(60, 0, 14, 9, (42, 27))),
-            'walking': (self.spider_sprite_sheet.get_sprite(0, 10, 14, 9, (42, 27)),
-                        self.spider_sprite_sheet.get_sprite(15, 10, 14, 9, (42, 27)),
-                        self.spider_sprite_sheet.get_sprite(30, 10, 14, 9, (42, 27)),
-                        self.spider_sprite_sheet.get_sprite(45, 10, 14, 9, (42, 27)),
-                        self.spider_sprite_sheet.get_sprite(60, 10, 14, 9, (42, 27)),
-                        self.spider_sprite_sheet.get_sprite(75, 10, 14, 9, (42, 27))),
-            'attacking': (self.spider_sprite_sheet.get_sprite(0, 20, 14, 9, (42, 27)),
-                          self.spider_sprite_sheet.get_sprite(15, 20, 14, 9, (42, 27)),
-                          self.spider_sprite_sheet.get_sprite(30, 20, 14, 9, (42, 27)),
-                          self.spider_sprite_sheet.get_sprite(45, 20, 14, 9, (42, 27))),
-            'web': (self.spider_sprite_sheet.get_sprite(1, 30, 23, 20, (46, 40)),
-                    self.spider_sprite_sheet.get_sprite(25, 30, 23, 20, (46, 40)),
-                    self.spider_sprite_sheet.get_sprite(49, 30, 23, 20, (46, 40)),
-                    self.spider_sprite_sheet.get_sprite(73, 30, 23, 20, (46, 40)),
-                    self.spider_sprite_sheet.get_sprite(97, 30, 23, 20, (46, 40)),
-                    self.spider_sprite_sheet.get_sprite(121, 30, 23, 20, (46, 40)))
+            "start_health": 7,
+            "damage": 10,
+            "standing": [
+                sprite_sheet.get_sprite(i * 15, 0, 14, 9, (42, 27)) for i in range(5)
+            ],
+            "walking": [
+                sprite_sheet.get_sprite(i * 15, 10, 14, 9, (42, 27)) for i in range(6)
+            ],
+            "attacking": [
+                sprite_sheet.get_sprite(i * 15, 20, 14, 9, (42, 27)) for i in range(4)
+            ],
+            "web": [
+                sprite_sheet.get_sprite(1 + i * 24, 30, 23, 20, (46, 40))
+                for i in range(6)
+            ],
         }
 
+    def get_potion_icons(self):
         start_potions = json.load(open(POTION_DATA))
-        self.potions = [Potion.from_dict_to_player_on_start(start_potions[i]) for i in range(4)]
+        self.potions: list[Potion] = [
+            Potion.from_dict_to_player_on_start(start_potions[i]) for i in range(4)
+        ]

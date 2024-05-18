@@ -1,7 +1,9 @@
 import pygame
+from config import WIN_HEIGHT, WIN_WIDTH
+from player_info import (ITEM_INFO_HEIGHT, ITEM_INFO_WIDTH,
+                         create_rounded_surface)
+
 from game.src.items import Item, Potion
-from config import WIN_WIDTH, WIN_HEIGHT
-from player_info import create_rounded_surface, ITEM_INFO_HEIGHT, ITEM_INFO_WIDTH
 
 
 def display_shop_item(game_, shop_item):
@@ -13,19 +15,26 @@ def display_shop_item(game_, shop_item):
     name_text = font.render(f"{item.name}", True, (0, 0, 0))
     font = pygame.font.Font(None, 24)
 
-    description_lines = item.description.split('\n')
+    description_lines = item.description.split("\n")
     description_text = font.render("Description:", True, (0, 0, 0))
 
     item_image = pygame.image.load(item.image)
     item_image = pygame.transform.scale(item_image, (100, 100))
 
-    rounded_surface = create_rounded_surface(ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10)
-    rounded_surface_rect = rounded_surface.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100))
+    rounded_surface = create_rounded_surface(
+        ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10
+    )
+    rounded_surface_rect = rounded_surface.get_rect(
+        center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100)
+    )
 
     border_width = 5
-    border_surface = create_rounded_surface(rounded_surface.get_width() + 2 * border_width,
-                                            rounded_surface.get_height() + 2 * border_width,
-                                            (51, 51, 0), radius=10)
+    border_surface = create_rounded_surface(
+        rounded_surface.get_width() + 2 * border_width,
+        rounded_surface.get_height() + 2 * border_width,
+        (51, 51, 0),
+        radius=10,
+    )
 
     border_surface.blit(rounded_surface, (border_width, border_width))
 
@@ -39,7 +48,14 @@ def display_shop_item(game_, shop_item):
 
         attributes_text = [
             font.render(f"{attribute}: {getattr(item, attribute)}", True, (0, 0, 0))
-            for attribute in ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
+            for attribute in [
+                "attack",
+                "hp",
+                "defense",
+                "range",
+                "attack_speed",
+                "movement_speed",
+            ]
             if getattr(item, attribute) != 0
         ]
 
@@ -61,7 +77,9 @@ def display_shop_item(game_, shop_item):
         button_x = (rounded_surface.get_width() - 150) + 50
         button_y = rounded_surface.get_height() - 150
 
-        button_surface = create_rounded_surface(button_x, button_y, (0, 160, 0), radius=10)
+        button_surface = create_rounded_surface(
+            button_x, button_y, (0, 160, 0), radius=10
+        )
 
         if game_.player.gold < item.price:
             button_surface.fill((160, 0, 0))
@@ -71,13 +89,22 @@ def display_shop_item(game_, shop_item):
         text_rect = purchase_text.get_rect(center=button_surface.get_rect().center)
         button_surface.blit(purchase_text, text_rect)
 
-        screen.blit(button_surface, (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230))
+        screen.blit(
+            button_surface,
+            (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230),
+        )
 
-        rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
+        rounded_surface.blit(
+            item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10)
+        )
 
-        screen.blit(border_surface,
-                    ((WIN_WIDTH - border_surface.get_width()) // 2,
-                     (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
+        screen.blit(
+            border_surface,
+            (
+                (WIN_WIDTH - border_surface.get_width()) // 2,
+                (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
+            ),
+        )
 
         screen.blit(rounded_surface, rounded_surface_rect)
 
@@ -101,7 +128,9 @@ def display_shop_item(game_, shop_item):
         button_x = (rounded_surface.get_width() - 150) + 50
         button_y = rounded_surface.get_height() - 150
 
-        button_surface = create_rounded_surface(button_x, button_y, (0, 160, 0), radius=10)
+        button_surface = create_rounded_surface(
+            button_x, button_y, (0, 160, 0), radius=10
+        )
 
         if game_.player.gold < item.price:
             button_surface.fill((160, 0, 0))
@@ -111,20 +140,36 @@ def display_shop_item(game_, shop_item):
         text_rect = purchase_text.get_rect(center=button_surface.get_rect().center)
         button_surface.blit(purchase_text, text_rect)
 
-        screen.blit(button_surface, (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230))
+        screen.blit(
+            button_surface,
+            (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230),
+        )
 
-        rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
+        rounded_surface.blit(
+            item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10)
+        )
 
-        screen.blit(border_surface, (
-            (WIN_WIDTH - border_surface.get_width()) // 2, (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
+        screen.blit(
+            border_surface,
+            (
+                (WIN_WIDTH - border_surface.get_width()) // 2,
+                (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
+            ),
+        )
 
         screen.blit(rounded_surface, rounded_surface_rect)
 
-        rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
+        rounded_surface.blit(
+            item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10)
+        )
 
-        screen.blit(border_surface,
-                    ((WIN_WIDTH - border_surface.get_width()) // 2,
-                     (WIN_HEIGHT - border_surface.get_height()) // 2 - 100))
+        screen.blit(
+            border_surface,
+            (
+                (WIN_WIDTH - border_surface.get_width()) // 2,
+                (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
+            ),
+        )
 
         screen.blit(rounded_surface, rounded_surface_rect)
 
@@ -143,13 +188,22 @@ def display_shop_item(game_, shop_item):
 
 def add_stats(player, item):
     if isinstance(item, Item):
-        attributes = ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
+        attributes = [
+            "attack",
+            "hp",
+            "defense",
+            "range",
+            "attack_speed",
+            "movement_speed",
+        ]
         if player.has_vorpal:
-            player.attack = player.attack / 1.2
+            player.attack /= 1.2
         for attribute in attributes:
-            setattr(player, attribute, getattr(player, attribute) + getattr(item, attribute))
+            setattr(
+                player, attribute, getattr(player, attribute) + getattr(item, attribute)
+            )
         if player.has_vorpal:
-            player.attack = player.attack * 1.2
+            player.attack *= 1.2
     elif isinstance(item, Potion):
         for potion in player.potions:
             if potion.name == item.name:

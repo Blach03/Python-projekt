@@ -1,16 +1,17 @@
 import sys
-import pygame
 
+import pygame
 from config import *
-from player_info import draw_player_info, draw_item_info, draw_gold_hp, draw_circle, draw_ripples
-from sprites.player import Player
-from sprites.other import DrawSpriteGroup, Button, DarkOverlay
-from sprites.shopItem import ShopItem
-from items_interaction import display_shop_item
-from generate import generate_map, generate_rooms
-from tile_builder import build_tile, tile_to_change
-from map import update_map, draw_map
 from data import Data
+from generate import generate_map, generate_rooms
+from items_interaction import display_shop_item
+from map import draw_map, update_map
+from player_info import (draw_circle, draw_gold_hp, draw_item_info,
+                         draw_player_info, draw_ripples)
+from sprites.other import Button, DarkOverlay, DrawSpriteGroup
+from sprites.player import Player
+from sprites.shopItem import ShopItem
+from tile_builder import build_tile, tile_to_change
 
 
 class Game:
@@ -24,7 +25,7 @@ class Game:
         self.playing = False
         self.ground = pygame.sprite.Group()
         self.walls = pygame.sprite.Group()
-        self.enemies = DrawSpriteGroup()    
+        self.enemies = DrawSpriteGroup()
         self.attacks = pygame.sprite.Group()
 
         self.map, self.start, self.end = None, None, None
@@ -81,7 +82,9 @@ class Game:
 
     def player_near_shop_item(self) -> ShopItem or None:
         for shop_item in self.attacks:
-            if isinstance(shop_item, ShopItem) and shop_item.is_player_near(self.player):
+            if isinstance(shop_item, ShopItem) and shop_item.is_player_near(
+                self.player
+            ):
                 return shop_item
         return None
 
@@ -96,14 +99,16 @@ class Game:
     def intro_screen(self):
         intro = True
 
-        intro_background = pygame.image.load('../resources/imgs/intro_background.jpg')
+        intro_background = pygame.image.load("../resources/imgs/intro_background.jpg")
         intro_background = pygame.transform.scale(intro_background, (1440, 720))
 
-        title_font = pygame.font.SysFont('chiller', 120)
-        title = title_font.render('Dungeon Adventure', True, MID_RED)
-        title_rect = title.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT*0.42))
+        title_font = pygame.font.SysFont("chiller", 120)
+        title = title_font.render("Dungeon Adventure", True, MID_RED)
+        title_rect = title.get_rect(center=(WIN_WIDTH / 2, WIN_HEIGHT * 0.42))
 
-        play_button = Button((WIN_WIDTH/2, WIN_HEIGHT*0.58), (120, 60), BLACK, MID_RED, 'Play', 40)
+        play_button = Button(
+            (WIN_WIDTH / 2, WIN_HEIGHT * 0.58), (120, 60), BLACK, MID_RED, "Play", 40
+        )
 
         while intro:
             for event in pygame.event.get():
@@ -111,7 +116,9 @@ class Game:
                     intro = False
                     self.running = False
 
-            if play_button.is_pressed(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]):
+            if play_button.is_pressed(
+                pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0]
+            ):
                 intro = False
 
             self.screen.blit(intro_background, (-240, 0))
@@ -123,13 +130,27 @@ class Game:
     def game_over(self):
         global play_again
         outro = True
-        background = pygame.image.load('../resources/imgs/end_background.png')
-        title_font = pygame.font.SysFont('chiller', 120)
-        title = title_font.render('Game over', True, MID_RED)
+        background = pygame.image.load("../resources/imgs/end_background.png")
+        title_font = pygame.font.SysFont("chiller", 120)
+        title = title_font.render("Game over", True, MID_RED)
         title_rect = title.get_rect(center=(WIN_WIDTH / 2, WIN_HEIGHT * 0.35))
 
-        play_button = Button((WIN_WIDTH / 2, WIN_HEIGHT * 0.55), (160, 60), MID_RED, BLACK, 'New game', 40)
-        quit_button = Button((WIN_WIDTH / 2, WIN_HEIGHT * 0.65), (160, 60), MID_RED, BLACK, 'Quit game', 40)
+        play_button = Button(
+            (WIN_WIDTH / 2, WIN_HEIGHT * 0.55),
+            (160, 60),
+            MID_RED,
+            BLACK,
+            "New game",
+            40,
+        )
+        quit_button = Button(
+            (WIN_WIDTH / 2, WIN_HEIGHT * 0.65),
+            (160, 60),
+            MID_RED,
+            BLACK,
+            "Quit game",
+            40,
+        )
 
         while outro:
             for event in pygame.event.get():

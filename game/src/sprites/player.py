@@ -1,7 +1,9 @@
 import math
-from game.src.sprites.props import Bullet, Attack
+
+from game.src.items import Potion
 from game.src.player_info import *
 from game.src.sprites.other import defence
+from game.src.sprites.props import Attack, Bullet
 
 
 class Player(pygame.sprite.Sprite):
@@ -12,7 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.x, self.y = position
         self.room_x, self.room_y = start_room_pos
         self.x_change, self.y_change = 0, 0
-        self.facing = 'down'
+        self.facing = "down"
         self.animation_loop = 1
 
         self.animation_positions = self.game.data.player_animation_positions
@@ -49,7 +51,7 @@ class Player(pygame.sprite.Sprite):
         self.gold = 100000  # for testing
 
         self.items = []
-        self.potions = game.data.potions
+        self.potions: list[Potion] = game.data.potions
 
         self.has_heartguard = False
         self.has_wings = False
@@ -77,10 +79,10 @@ class Player(pygame.sprite.Sprite):
 
         self.x += self.x_change
         self.rect.x = self.x
-        collide_blocks(self, 'x')
+        collide_blocks(self, "x")
         self.y += self.y_change
         self.rect.y = self.y
-        collide_blocks(self, 'y')
+        collide_blocks(self, "y")
         self.x_change, self.y_change = 0, 0
 
         self.last_shooting += 1
@@ -95,16 +97,16 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             self.y_change -= self.movement_speed
-            self.facing = 'up'
+            self.facing = "up"
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.y_change += self.movement_speed
-            self.facing = 'down'
+            self.facing = "down"
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.x_change += self.movement_speed
-            self.facing = 'right'
+            self.facing = "right"
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.x_change -= self.movement_speed
-            self.facing = 'left'
+            self.facing = "left"
 
         if self.x_change != 0 and self.y_change != 0:
             self.x_change /= math.sqrt(2)
@@ -151,19 +153,23 @@ class Player(pygame.sprite.Sprite):
         if self.x_change == 0 and self.y_change == 0:
             self.image = self.animation_positions.get(self.facing)[0]
         else:
-            self.image = self.animation_positions.get(self.facing)[int(self.animation_loop)]
+            self.image = self.animation_positions.get(self.facing)[
+                int(self.animation_loop)
+            ]
             self.animation_loop += 0.1
             if self.animation_loop >= 3:
                 self.animation_loop = 1
 
     def take_damage(self, damage):
-        self.current_hp -= (damage * (1 - defence(self.defense)))
+        self.current_hp -= damage * (1 - defence(self.defense))
         if self.current_hp <= 0:
             self.game.playing = False
 
 
 def get_clicked_inventory_slot(mouse_pos) -> int or None:
-    x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (WIN_HEIGHT - PLAYER_INFO_HEIGHT) / 2 + 250
+    x, y = (WIN_WIDTH - PLAYER_INFO_WIDTH) / 2 + 20, (
+        WIN_HEIGHT - PLAYER_INFO_HEIGHT
+    ) / 2 + 250
 
     def check_items(start, end, get_row, get_col):
         for item_index in range(start, end):
@@ -172,7 +178,10 @@ def get_clicked_inventory_slot(mouse_pos) -> int or None:
             item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
             item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
 
-            if item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE:
+            if (
+                item_x <= mouse_pos[0] <= item_x + GRID_CELL_SIZE
+                and item_y <= mouse_pos[1] <= item_y + GRID_CELL_SIZE
+            ):
                 return item_index
 
     items1 = check_items(0, 24, lambda i: i // 8, lambda i: i % 8)
@@ -187,23 +196,27 @@ def get_clicked_inventory_slot(mouse_pos) -> int or None:
 
 
 def collide_blocks(sprite, direction):
-    has_wings = getattr(sprite, 'has_wings', False)
+    has_wings = getattr(sprite, "has_wings", False)
 
-    if not has_wings or (sprite.rect.x < TILE_SIZE or sprite.rect.right > WIN_WIDTH - TILE_SIZE or
-                         sprite.rect.y < TILE_SIZE or sprite.rect.bottom > WIN_HEIGHT - TILE_SIZE):
+    if not has_wings or (
+        sprite.rect.x < TILE_SIZE
+        or sprite.rect.right > WIN_WIDTH - TILE_SIZE
+        or sprite.rect.y < TILE_SIZE
+        or sprite.rect.bottom > WIN_HEIGHT - TILE_SIZE
+    ):
         handle_collision(sprite, direction)
 
 
 def handle_collision(sprite, direction):
     hits = pygame.sprite.spritecollide(sprite, sprite.game.walls, False)
     if hits:
-        if direction == 'x':
+        if direction == "x":
             if sprite.x_change > 0:
                 sprite.rect.x = hits[0].rect.left - sprite.rect.width
             elif sprite.x_change < 0:
                 sprite.rect.x = hits[0].rect.right
             sprite.x = sprite.rect.x
-        elif direction == 'y':
+        elif direction == "y":
             if sprite.y_change > 0:
                 sprite.rect.y = hits[0].rect.top - sprite.rect.height
             elif sprite.y_change < 0:

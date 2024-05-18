@@ -1,6 +1,8 @@
-import pygame
-from game.src.config import *
 import math
+
+import pygame
+
+from game.src.config import *
 
 
 class DrawSpriteGroup(pygame.sprite.Group):
@@ -24,7 +26,7 @@ class DarkOverlay:
 
 class Button:
     def __init__(self, center, size, fg, bg, content, fontsize):
-        font = pygame.font.SysFont('chiller', fontsize)
+        font = pygame.font.SysFont("chiller", fontsize)
         text = font.render(content, True, fg)
         text_rect = text.get_rect(center=(size[0] / 2, size[1] / 2))
 
@@ -46,4 +48,3 @@ def defence(defence) -> float:
     percentage = (22.97 * math.log(0.162 * defence + 1.00)) / 100
     percentage = min(percentage, 0.95)
     return percentage
-

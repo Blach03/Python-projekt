@@ -1,30 +1,33 @@
-from map import update_map
-from sprites.blocks import Wall, Ground, CobWeb
-from sprites.shopItem import ShopItem
 import random
+
 from config import *
+from map import update_map
+from sprites.blocks import CobWeb, Ground, Wall
 from sprites.enemies import Spider
+from sprites.shopItem import ShopItem
 
 
 def build_tile(game, tile: list[list[int]]) -> None:
     for i, row in enumerate(tile):
         for j, elem in enumerate(row):
-            if elem == '.':
+            if elem == ".":
                 Ground(game, j, i)
-            elif elem == 'B' or elem == 'P':
+            elif elem == "B" or elem == "P":
                 Wall(game, j, i)
-            elif elem == 'I':
+            elif elem == "I":
                 ShopItem(game, j, i)
-            elif elem == 'M':
+            elif elem == "M":
                 Ground(game, j, i)
                 Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
-            if random.randint(1, 10) > 9 and elem != 'I':
+            if random.randint(1, 10) > 9 and elem != "I":
                 CobWeb(game, j, i)
 
 
 def tile_to_change(game) -> None:
 
-    def change_tile(tile_before: list[list[int]], room_x: int, room_y: int, x: int, y: int) -> None:
+    def change_tile(
+        tile_before: list[list[int]], room_x: int, room_y: int, x: int, y: int
+    ) -> None:
         game.enemies.empty()
         game.ground.empty()
         game.walls.empty()

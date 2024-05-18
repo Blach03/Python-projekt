@@ -1,5 +1,7 @@
-import pygame
 from random import randint
+
+import pygame
+
 from game.src.config import *
 
 
@@ -29,4 +31,6 @@ class CobWeb(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.image = game.data.blocks[4]
         self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = (x+randint(0, 5)/10)*TILE_SIZE, (y+randint(0, 5)/10)*TILE_SIZE
+        self.rect.x, self.rect.y = (x + randint(0, 5) / 10) * TILE_SIZE, (
+            y + randint(0, 5) / 10
+        ) * TILE_SIZE
