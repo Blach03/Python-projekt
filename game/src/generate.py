@@ -29,9 +29,9 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
         curr_location = [curr_location[0] + neigh[x][0], curr_location[1] + neigh[x][1]]
         if map[curr_location[0]][curr_location[1]] == 0:
             map[curr_location[0]][curr_location[1]] = 1
-        if 1 < i < 40:
+        if 10 < i < 40:
             x = randint(0, 15)
-            if x != 1:  # for testing (change != to ==)
+            if x == 1:
                 map[curr_location[0]][curr_location[1]] = 1.2  # shop
                 shops += 1
         if i == 40 and shops == 0:

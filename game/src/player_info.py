@@ -1,6 +1,6 @@
 import pygame
 from config import *
-from game.src.items import Item, Potion
+from items import Item, Potion
 
 
 def draw_player_info(game):
@@ -83,64 +83,55 @@ def draw_segment_bar(surface, position, percentage):
         )
 
 
+import pygame
+
 def draw_inventory_grid(surface, position, player):
     x, y = position
+    draw_grid_background(surface, x, y)
+    draw_grid_items(surface, x, y, player)
+    draw_grid_potions(surface, x, y, player)
 
+def draw_grid_background(surface, x, y):
     for row in range(GRID_HEIGHT):
         for col in range(GRID_WIDTH - 2):
-            pygame.draw.rect(
-                surface,
-                (179, 179, 0, 230),
-                (
-                    x + (GRID_CELL_SIZE + GRID_SPACING) * col,
-                    y + (GRID_CELL_SIZE + GRID_SPACING) * row,
-                    GRID_CELL_SIZE,
-                    GRID_CELL_SIZE,
-                ),
-            )
-
-    for row in range(GRID_HEIGHT):
+            draw_grid_cell(surface, (179, 179, 0, 230), x, y, row, col)
         for col in range(GRID_WIDTH - 2, GRID_WIDTH):
-            pygame.draw.rect(
-                surface,
-                (160, 160, 0, 230),
-                (
-                    x + (GRID_CELL_SIZE + GRID_SPACING) * col,
-                    y + (GRID_CELL_SIZE + GRID_SPACING) * row,
-                    GRID_CELL_SIZE,
-                    GRID_CELL_SIZE,
-                ),
-            )
+            draw_grid_cell(surface, (160, 160, 0, 230), x, y, row, col)
 
+def draw_grid_cell(surface, color, x, y, row, col):
+    pygame.draw.rect(
+        surface,
+        color,
+        (
+            x + (GRID_CELL_SIZE + GRID_SPACING) * col,
+            y + (GRID_CELL_SIZE + GRID_SPACING) * row,
+            GRID_CELL_SIZE,
+            GRID_CELL_SIZE,
+        ),
+    )
+
+def draw_grid_items(surface, x, y, player):
     for item_index, item in enumerate(player.items):
         if hasattr(item, "image"):
-            item_image = pygame.image.load(item.image)
-            item_image = pygame.transform.scale(
-                item_image, (GRID_CELL_SIZE, GRID_CELL_SIZE)
-            )
-
+            item_image = load_and_scale_image(item.image, GRID_CELL_SIZE)
             item_row = item_index // (GRID_WIDTH - 2)
             item_col = item_index % (GRID_WIDTH - 2)
             item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
             item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
-
             surface.blit(item_image, (item_x, item_y))
 
+def draw_grid_potions(surface, x, y, player):
     for item_index, potion in enumerate(player.potions):
-        potion_image = potion.ready_image
-        if potion.ready_image is None:
-            potion_image = pygame.image.load(potion.image)
-            potion_image = pygame.transform.scale(
-                potion_image, (GRID_CELL_SIZE, GRID_CELL_SIZE)
-            )
-
+        potion_image = load_and_scale_image(potion.image, GRID_CELL_SIZE)
         item_row = item_index // 2
         item_col = (item_index % 2) + GRID_WIDTH - 2
         item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
         item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
-
         surface.blit(potion_image, (item_x, item_y))
 
+def load_and_scale_image(image_path, size):
+    image = pygame.image.load(image_path)
+    return pygame.transform.scale(image, (size, size))
 
 def create_rounded_surface(width, height, color, radius):
     surface = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -148,40 +139,55 @@ def create_rounded_surface(width, height, color, radius):
     pygame.draw.rect(surface, color, rect, border_radius=radius)
     return surface
 
+def draw_item(item, screen):
+    rounded_surface, rounded_surface_rect = prepare_item_surface(item)
+    draw_item_details(item, rounded_surface)
+    screen.blit(*prepare_border_surface(rounded_surface, rounded_surface_rect))
+    screen.blit(rounded_surface, rounded_surface_rect)
 
-def draw_item(item: Item, screen: pygame.Surface) -> None:
-    font = pygame.font.Font(None, 32)
-
-    name_text = font.render(item.name, True, (0, 0, 0))
-    font = pygame.font.Font(None, 24)
-    attributes_text = [
-        font.render(
-            f"{attribute}: {getattr(item, attribute)}", True, (0, 0, 0)
-        )
-        for attribute in [
-            "attack",
-            "hp",
-            "defense",
-            "range",
-            "attack_speed",
-            "movement_speed",
-        ]
-        if getattr(item, attribute) != 0
-    ]
-
-    description_lines = item.description.split("\n")
-    description_text = font.render("Description:", True, (0, 0, 0))
-
-    item_image = pygame.image.load(item.image)
-    item_image = pygame.transform.scale(item_image, (100, 100))
-
+def prepare_item_surface(item):
     rounded_surface = create_rounded_surface(
         ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10
     )
     rounded_surface_rect = rounded_surface.get_rect(
         center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100)
     )
+    return rounded_surface, rounded_surface_rect
 
+def draw_item_details(item, surface):
+    font = pygame.font.Font(None, 32)
+    y_offset = draw_text(surface, font, item.name, (0, 0, 0), 10, 10)
+    y_offset += 10
+    y_offset += draw_item_attributes(item, surface, y_offset)
+    y_offset = max(y_offset, 100)
+    draw_text(surface, pygame.font.Font(None, 24), "Description:", (0, 0, 0), 10, y_offset + 10)
+    y_offset += 30
+    draw_item_description(surface, item.description, y_offset)
+    draw_item_image(surface, item.image, 10, 10)
+
+def draw_text(surface, font, text, color, x, y):
+    rendered_text = font.render(text, True, color)
+    surface.blit(rendered_text, (x, y))
+    return rendered_text.get_height()
+
+def draw_item_attributes(item, surface, y_offset):
+    font = pygame.font.Font(None, 24)
+    attributes = ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
+    for attribute in attributes:
+        if getattr(item, attribute) != 0:
+            y_offset += draw_text(surface, font, f"{attribute}: {getattr(item, attribute)}", (0, 0, 0), 10, y_offset)
+    return y_offset
+
+def draw_item_description(surface, description, y_offset):
+    font = pygame.font.Font(None, 24)
+    for line in description.split("\n"):
+        y_offset += draw_text(surface, font, line, (0, 0, 0), 10, y_offset)
+
+def draw_item_image(surface, image_path, x, y):
+    item_image = load_and_scale_image(image_path, 100)
+    surface.blit(item_image, (surface.get_width() - item_image.get_width() - x, y))
+
+def prepare_border_surface(rounded_surface, rounded_surface_rect):
     border_width = 5
     border_surface = create_rounded_surface(
         rounded_surface.get_width() + 2 * border_width,
@@ -189,147 +195,76 @@ def draw_item(item: Item, screen: pygame.Surface) -> None:
         (51, 51, 0),
         radius=10,
     )
-
     border_surface.blit(rounded_surface, (border_width, border_width))
-
-    y_offset = 10
-    rounded_surface.blit(name_text, (10, y_offset))
-    y_offset += name_text.get_height() + 10
-
-    for text in attributes_text:
-        rounded_surface.blit(text, (10, y_offset))
-        y_offset += text.get_height()
-
-    y_offset = max(y_offset, 100)
-
-    rounded_surface.blit(description_text, (10, y_offset + 10))
-
-    y_offset += 30
-
-    for line in description_lines:
-        text_surface = font.render(line, True, (0, 0, 0))
-        rounded_surface.blit(text_surface, (10, y_offset))
-        y_offset += text_surface.get_height()
-
-    rounded_surface.blit(
-        item_image,
-        (rounded_surface.get_width() - item_image.get_width() - 10, 10),
+    border_position = (
+        (WIN_WIDTH - border_surface.get_width()) // 2,
+        (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
     )
+    return border_surface, border_position
 
-    screen.blit(
-        border_surface,
-        (
-            (WIN_WIDTH - border_surface.get_width()) // 2,
-            (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
-        ),
-    )
-
+def draw_potion(potion, screen, player):
+    rounded_surface, rounded_surface_rect = prepare_potion_surface(potion)
+    draw_potion_details(potion, rounded_surface)
+    draw_use_button(potion, rounded_surface, rounded_surface_rect, player)
+    screen.blit(*prepare_border_surface(rounded_surface, rounded_surface_rect))
     screen.blit(rounded_surface, rounded_surface_rect)
 
-
-def draw_potion(item: Potion, screen: pygame.Surface, player) -> None:
-    font = pygame.font.Font(None, 32)
-
-    name_text = font.render(f"{item.name}", True, (0, 0, 0))
-    count_text = font.render(f"Count: {item.count}", True, (0, 0, 0))
-    font = pygame.font.Font(None, 24)
-
-    description_lines = item.description.split("\n")
-    description_text = font.render("Description:", True, (0, 0, 0))
-
-    item_image = pygame.image.load(item.image)
-    item_image = pygame.transform.scale(item_image, (100, 100))
-
+def prepare_potion_surface(potion):
     rounded_surface = create_rounded_surface(
         ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10
     )
     rounded_surface_rect = rounded_surface.get_rect(
         center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100)
     )
+    return rounded_surface, rounded_surface_rect
 
-    border_width = 5
-    border_surface = create_rounded_surface(
-        rounded_surface.get_width() + 2 * border_width,
-        rounded_surface.get_height() + 2 * border_width,
-        (51, 51, 0),
-        radius=10,
-    )
-
-    border_surface.blit(rounded_surface, (border_width, border_width))
-
-    y_offset = 10
-    rounded_surface.blit(name_text, (10, y_offset))
-    y_offset += name_text.get_height() + 10
-
-    rounded_surface.blit(count_text, (10, y_offset))
-    y_offset += name_text.get_height() + 10
-
+def draw_potion_details(potion, surface):
+    font = pygame.font.Font(None, 32)
+    y_offset = draw_text(surface, font, potion.name, (0, 0, 0), 10, 10)
+    y_offset += draw_text(surface, font, f"Count: {potion.count}", (0, 0, 0), 10, y_offset + 10)
     y_offset = max(y_offset, 100)
-
-    rounded_surface.blit(description_text, (10, y_offset + 10))
-
+    draw_text(surface, pygame.font.Font(None, 24), "Description:", (0, 0, 0), 10, y_offset + 10)
     y_offset += 30
+    draw_potion_description(surface, potion.description, y_offset)
+    draw_potion_image(surface, potion.image, 10, 10)
 
-    for line in description_lines:
-        text_surface = font.render(line, True, (0, 0, 0))
-        rounded_surface.blit(text_surface, (10, y_offset))
-        y_offset += text_surface.get_height()
+def draw_potion_description(surface, description, y_offset):
+    font = pygame.font.Font(None, 24)
+    for line in description.split("\n"):
+        y_offset += draw_text(surface, font, line, (0, 0, 0), 10, y_offset)
 
-    rounded_surface.blit(
-        item_image,
-        (rounded_surface.get_width() - item_image.get_width() - 10, 10),
-    )
+def draw_potion_image(surface, image_path, x, y):
+    potion_image = load_and_scale_image(image_path, 100)
+    surface.blit(potion_image, (surface.get_width() - potion_image.get_width() - x, y))
 
-    screen.blit(
-        border_surface,
-        (
-            (WIN_WIDTH - border_surface.get_width()) // 2,
-            (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
-        ),
-    )
+def draw_use_button(potion, rounded_surface, rounded_surface_rect, player):
+    button_surface = create_use_button_surface(potion)
+    draw_use_button_text(button_surface)
+    button_x, button_y = get_button_position(rounded_surface_rect)
+    rounded_surface.blit(button_surface, (button_x - rounded_surface_rect.left, button_y - rounded_surface_rect.top))
+    button_rect = button_surface.get_rect(topleft=(button_x, button_y))
+    if button_clicked(button_rect, player) and potion.count > 0:
+        potion.use(player)
 
-    screen.blit(rounded_surface, rounded_surface_rect)
+def create_use_button_surface(potion):
+    button_surface = create_rounded_surface(150, 50, (0, 160, 0) if potion.count > 0 else (160, 0, 0), radius=10)
+    return button_surface
 
-    button_x = (rounded_surface.get_width() - 150) + 50
-    button_y = rounded_surface.get_height() - 150
+def draw_use_button_text(surface):
+    font = pygame.font.Font(None, 24)
+    use_text = font.render("Use", True, (0, 0, 0))
+    surface.blit(use_text, use_text.get_rect(center=surface.get_rect().center))
 
-    button_surface = create_rounded_surface(
-        button_x, button_y, (0, 160, 0), radius=10
-    )
+def get_button_position(rounded_surface_rect):
+    button_x = rounded_surface_rect.width - 220
+    button_y = rounded_surface_rect.height - 50
+    return rounded_surface_rect.left + button_x, rounded_surface_rect.top + button_y
 
-    if item.count == 0:
-        button_surface.fill((160, 0, 0))
 
-    use_text = font.render(f"Use", True, (0, 0, 0))
 
-    text_rect = use_text.get_rect(center=button_surface.get_rect().center)
-    button_surface.blit(use_text, text_rect)
+def button_clicked(button_rect, player):
+    return button_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]
 
-    screen.blit(
-        button_surface,
-        (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230),
-    )
-
-    rounded_surface.blit(
-        item_image,
-        (rounded_surface.get_width() - item_image.get_width() - 10, 10),
-    )
-
-    screen.blit(
-        border_surface,
-        (
-            (WIN_WIDTH - border_surface.get_width()) // 2,
-            (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
-        ),
-    )
-
-    screen.blit(rounded_surface, rounded_surface_rect)
-
-    rect = button_surface.get_rect()
-    rect.x = rounded_surface_rect.left + 50
-    rect.y = rounded_surface_rect.top + 230
-    if rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0] and item.count > 0:
-        item.use(player)
 
 
 def draw_item_info(game):

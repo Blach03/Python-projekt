@@ -1,9 +1,9 @@
 import math
 
-from game.src.items import Potion
-from game.src.player_info import *
-from game.src.sprites.other import defence
-from game.src.sprites.props import Attack, Bullet
+from items import Potion
+from player_info import *
+from sprites.other import defence
+from sprites.props import Attack, Bullet
 
 
 class Player(pygame.sprite.Sprite):

@@ -2,7 +2,7 @@ from random import randint
 
 import pygame
 
-from game.src.config import *
+from config import *
 
 
 class Wall(pygame.sprite.Sprite):

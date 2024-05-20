@@ -2,8 +2,8 @@ import random
 
 import pygame
 
-from game.src.player_info import trigger_ripple
-from game.src.sprites.player import collide_blocks
+from player_info import trigger_ripple
+from sprites.player import collide_blocks
 
 
 class Spider(pygame.sprite.Sprite):

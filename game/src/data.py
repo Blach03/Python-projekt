@@ -3,7 +3,8 @@ import json
 import pygame
 from config import *
 
-from game.src.items import Potion
+
+from items import Potion
 
 
 class SpriteSheet:

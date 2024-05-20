@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from game.src.config import *
+from config import *
 
 
 class Bullet(pygame.sprite.Sprite):

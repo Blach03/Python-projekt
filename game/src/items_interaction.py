@@ -3,23 +3,110 @@ from config import WIN_HEIGHT, WIN_WIDTH
 from player_info import (ITEM_INFO_HEIGHT, ITEM_INFO_WIDTH,
                          create_rounded_surface)
 
-from game.src.items import Item, Potion
+from items import Item, Potion
 
+
+def load_font(size):
+    return pygame.font.Font(None, size)
+
+def render_text(font, text, color):
+    return font.render(text, True, color)
+
+def load_and_scale_image(image_path, size):
+    image = pygame.image.load(image_path)
+    return pygame.transform.scale(image, size)
+
+def draw_item_attributes(font, surface, item, y_offset):
+    attributes = ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
+    for attribute in attributes:
+        if getattr(item, attribute) != 0:
+            text = render_text(font, f"{attribute}: {getattr(item, attribute)}", (0, 0, 0))
+            surface.blit(text, (10, y_offset))
+            y_offset += text.get_height()
+    return y_offset
+
+def draw_description(font, surface, description_lines, y_offset):
+    description_text = render_text(font, "Description:", (0, 0, 0))
+    surface.blit(description_text, (10, y_offset + 10))
+    y_offset += 30
+    for line in description_lines:
+        text_surface = render_text(font, line, (0, 0, 0))
+        surface.blit(text_surface, (10, y_offset))
+        y_offset += text_surface.get_height()
+    return y_offset
+
+def create_button_surface(font, item, player_gold):
+    button_surface = create_rounded_surface(180, 50, (0, 160, 0), radius=10)
+    if player_gold < item.price:
+        button_surface.fill((160, 0, 0))
+    purchase_text = render_text(font, f"Purchase ({item.price} Gold)", (0, 0, 0))
+    text_rect = purchase_text.get_rect(center=button_surface.get_rect().center)
+    button_surface.blit(purchase_text, text_rect)
+    return button_surface
+
+def draw_item_details(screen, font, rounded_surface, item, y_offset):
+    description_lines = item.description.split("\n")
+    y_offset = draw_item_attributes(font, rounded_surface, item, y_offset)
+    y_offset = max(y_offset, 100)
+    y_offset = draw_description(font, rounded_surface, description_lines, y_offset)
+    return y_offset
+
+def display_item(screen, item, player_gold, font, rounded_surface, rounded_surface_rect):
+    y_offset = 10
+    name_text = render_text(load_font(30), item.name, (0, 0, 0))
+    rounded_surface.blit(name_text, (10, y_offset))
+    y_offset += name_text.get_height() + 10
+
+    y_offset = draw_item_details(screen, font, rounded_surface, item, y_offset)
+
+    button_surface = create_button_surface(font, item, player_gold)
+
+    button_x = (rounded_surface.get_width() - button_surface.get_width()) // 2
+
+    screen.blit(
+        button_surface,
+        (rounded_surface_rect.left + button_x, rounded_surface_rect.top + 230),
+    )
+
+    item_image = load_and_scale_image(item.image, (100, 100))
+    rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
+
+    return button_surface
+
+def display_potion_details(screen, item, player_gold, font, rounded_surface, rounded_surface_rect):
+    y_offset = 10
+    name_text = render_text(load_font(30), item.name, (0, 0, 0))
+    rounded_surface.blit(name_text, (10, y_offset))
+    y_offset += name_text.get_height() + 10
+
+    count_text = render_text(font, f"Count: {item.count}", (0, 0, 0))
+    rounded_surface.blit(count_text, (10, y_offset))
+    y_offset += count_text.get_height() + 10
+
+    description_lines = item.description.split("\n")
+    y_offset = max(y_offset, 100)
+    y_offset = draw_description(font, rounded_surface, description_lines, y_offset)
+
+    button_surface = create_button_surface(font, item, player_gold)
+
+    button_x = (rounded_surface.get_width() - button_surface.get_width()) // 2
+
+    screen.blit(
+        button_surface,
+        (rounded_surface_rect.left + button_x, rounded_surface_rect.top + 230),
+    )
+
+    item_image = load_and_scale_image(item.image, (100, 100))
+    rounded_surface.blit(item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10))
+
+    return button_surface
 
 def display_shop_item(game_, shop_item):
     item = shop_item.item
     screen = game_.screen
 
-    font = pygame.font.Font(None, 32)
-
-    name_text = font.render(f"{item.name}", True, (0, 0, 0))
-    font = pygame.font.Font(None, 24)
-
-    description_lines = item.description.split("\n")
-    description_text = font.render("Description:", True, (0, 0, 0))
-
-    item_image = pygame.image.load(item.image)
-    item_image = pygame.transform.scale(item_image, (100, 100))
+    font_large = load_font(32)
+    font_small = load_font(24)
 
     rounded_surface = create_rounded_surface(
         ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10
@@ -38,140 +125,19 @@ def display_shop_item(game_, shop_item):
 
     border_surface.blit(rounded_surface, (border_width, border_width))
 
-    y_offset = 10
-    rounded_surface.blit(name_text, (10, y_offset))
-    y_offset += name_text.get_height() + 10
-
-    button_surface = None
-
     if isinstance(item, Item):
-
-        attributes_text = [
-            font.render(f"{attribute}: {getattr(item, attribute)}", True, (0, 0, 0))
-            for attribute in [
-                "attack",
-                "hp",
-                "defense",
-                "range",
-                "attack_speed",
-                "movement_speed",
-            ]
-            if getattr(item, attribute) != 0
-        ]
-
-        for text in attributes_text:
-            rounded_surface.blit(text, (10, y_offset))
-            y_offset += text.get_height()
-
-        y_offset = max(y_offset, 100)
-
-        rounded_surface.blit(description_text, (10, y_offset + 10))
-
-        y_offset += 30
-
-        for line in description_lines:
-            text_surface = font.render(line, True, (0, 0, 0))
-            rounded_surface.blit(text_surface, (10, y_offset))
-            y_offset += text_surface.get_height()
-
-        button_x = (rounded_surface.get_width() - 150) + 50
-        button_y = rounded_surface.get_height() - 150
-
-        button_surface = create_rounded_surface(
-            button_x, button_y, (0, 160, 0), radius=10
-        )
-
-        if game_.player.gold < item.price:
-            button_surface.fill((160, 0, 0))
-
-        purchase_text = font.render(f"Purchase ({item.price} Gold)", True, (0, 0, 0))
-
-        text_rect = purchase_text.get_rect(center=button_surface.get_rect().center)
-        button_surface.blit(purchase_text, text_rect)
-
-        screen.blit(
-            button_surface,
-            (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230),
-        )
-
-        rounded_surface.blit(
-            item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10)
-        )
-
-        screen.blit(
-            border_surface,
-            (
-                (WIN_WIDTH - border_surface.get_width()) // 2,
-                (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
-            ),
-        )
-
-        screen.blit(rounded_surface, rounded_surface_rect)
-
+        button_surface = display_item(screen, item, game_.player.gold, font_small, rounded_surface, rounded_surface_rect)
     elif isinstance(item, Potion):
-        count_text = font.render(f"Count: {item.count}", True, (0, 0, 0))
+        button_surface = display_potion_details(screen, item, game_.player.gold, font_small, rounded_surface, rounded_surface_rect)
 
-        rounded_surface.blit(count_text, (10, y_offset))
-        y_offset += name_text.get_height() + 10
-
-        y_offset = max(y_offset, 100)
-
-        rounded_surface.blit(description_text, (10, y_offset + 10))
-
-        y_offset += 30
-
-        for line in description_lines:
-            text_surface = font.render(line, True, (0, 0, 0))
-            rounded_surface.blit(text_surface, (10, y_offset))
-            y_offset += text_surface.get_height()
-
-        button_x = (rounded_surface.get_width() - 150) + 50
-        button_y = rounded_surface.get_height() - 150
-
-        button_surface = create_rounded_surface(
-            button_x, button_y, (0, 160, 0), radius=10
-        )
-
-        if game_.player.gold < item.price:
-            button_surface.fill((160, 0, 0))
-
-        purchase_text = font.render(f"Purchase ({item.price} Gold)", True, (0, 0, 0))
-
-        text_rect = purchase_text.get_rect(center=button_surface.get_rect().center)
-        button_surface.blit(purchase_text, text_rect)
-
-        screen.blit(
-            button_surface,
-            (rounded_surface_rect.left + 50, rounded_surface_rect.top + 230),
-        )
-
-        rounded_surface.blit(
-            item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10)
-        )
-
-        screen.blit(
-            border_surface,
-            (
-                (WIN_WIDTH - border_surface.get_width()) // 2,
-                (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
-            ),
-        )
-
-        screen.blit(rounded_surface, rounded_surface_rect)
-
-        rounded_surface.blit(
-            item_image, (rounded_surface.get_width() - item_image.get_width() - 10, 10)
-        )
-
-        screen.blit(
-            border_surface,
-            (
-                (WIN_WIDTH - border_surface.get_width()) // 2,
-                (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
-            ),
-        )
-
-        screen.blit(rounded_surface, rounded_surface_rect)
+    screen.blit(
+        border_surface,
+        (
+            (WIN_WIDTH - border_surface.get_width()) // 2,
+            (WIN_HEIGHT - border_surface.get_height()) // 2 - 100,
+        ),
+    )
+    screen.blit(rounded_surface, rounded_surface_rect)
 
     mouse_pos = pygame.mouse.get_pos()
     rect = button_surface.get_rect()
@@ -184,6 +150,7 @@ def display_shop_item(game_, shop_item):
                     game_.player.items.append(item)
                 add_stats(game_.player, item)
                 shop_item.purchase_item(game_.player, game_)
+
 
 
 def add_stats(player, item):
