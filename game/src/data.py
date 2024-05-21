@@ -9,7 +9,7 @@ from items import Potion
 
 class SpriteSheet:
     def __init__(self, file):
-        self.sheet = pygame.image.load(file).convert()
+        self.sheet = pygame.image.load(file).convert_alpha()
 
     def get_sprite(self, x, y, width, height, scaling=(TILE_SIZE, TILE_SIZE)):
         sprite = pygame.Surface((width, height)).convert()
@@ -35,6 +35,9 @@ class Data:
 
         self.spider = None
         self.get_spider_sprites()
+
+        self.boss = None
+        self.get_boss_sprites()
 
         self.potions = None
         self.get_potion_icons()
@@ -93,6 +96,26 @@ class Data:
                 for i in range(6)
             ],
         }
+
+    def get_boss_sprites(self):
+        sprite_sheet = SpriteSheet(BOSS_SPRITE)
+        self.boss = {
+            "start_health": 70,
+            "damage": 10,
+            "standing": [
+                sprite_sheet.get_sprite(i * 64, 0, 64, 64, (128, 128)) for i in range(6)
+            ],
+            "charge": [
+                sprite_sheet.get_sprite(i * 64, 64, 64, 64, (128, 128)) for i in range(6)
+            ],
+            "attacking": [
+                sprite_sheet.get_sprite(i * 64, 128, 64, 64, (128, 128)) for i in range(4)
+            ],
+            "death": [
+                sprite_sheet.get_sprite(i * 64, 192, 64, 64, (128, 128)) for i in range(8)
+            ],
+        }
+
 
     def get_potion_icons(self):
         start_potions = json.load(open(POTION_DATA))

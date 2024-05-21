@@ -20,6 +20,7 @@ POTION_DATA = "../resources/json/potions.json"
 ROOMS_DATA = "../resources/json/rooms.json"
 
 CHARACTER_SPRITE = "../resources/imgs/character.png"
+BOSS_SPRITE = "../resources/imgs/boss.png"
 BLOCKS_SPRITE = "../resources/imgs/blocks.png"
 SPIDER_SPRITE = "../resources/imgs/spider.png"
 BULLET_SPRITE = "../resources/imgs/bullets.png"
