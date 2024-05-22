@@ -3,8 +3,9 @@ import random
 from config import *
 from map import update_map
 from sprites.blocks import CobWeb, Ground, Wall
-from sprites.enemies import Spider
+from sprites.enemies import Spider, Boss
 from sprites.shopItem import ShopItem
+
 
 
 def build_tile(game, tile: list[list[int]]) -> None:
@@ -19,6 +20,9 @@ def build_tile(game, tile: list[list[int]]) -> None:
             elif elem == "M":
                 Ground(game, j, i)
                 Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
+            elif elem == "E":
+                Ground(game, j, i)
+                Boss(game, (j * TILE_SIZE, i * TILE_SIZE))
             if random.randint(1, 10) > 9 and elem != "I":
                 CobWeb(game, j, i)
 
