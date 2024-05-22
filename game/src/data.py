@@ -39,6 +39,12 @@ class Data:
         self.boss = None
         self.get_boss_sprites()
 
+        self.ball_flying = None
+        self.get_ball_sprites()
+
+        self.fire = None
+        self.get_fire_sprites()
+
         self.potions = None
         self.get_potion_icons()
 
@@ -115,6 +121,19 @@ class Data:
                 sprite_sheet.get_sprite(i * 64, 192, 64, 64, (128, 128)) for i in range(8)
             ],
         }
+
+
+    def get_ball_sprites(self):
+        sprite_sheet = SpriteSheet(BOSS_ATTACK_SPRITE)
+        self.ball_flying = [
+            sprite_sheet.get_sprite(352 + i * 32, 288, 32, 32, (32, 32)) for i in range(4)
+        ]
+
+    def get_fire_sprites(self):
+        sprite_sheet = SpriteSheet(BOSS_ATTACK_SPRITE)
+        self.fire = [
+            sprite_sheet.get_sprite(352 + i * 32, 224, 32, 32, (32, 32)) for i in range(4)
+        ]
 
 
     def get_potion_icons(self):

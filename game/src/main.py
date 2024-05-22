@@ -12,6 +12,7 @@ from sprites.other import Button, DarkOverlay, DrawSpriteGroup
 from sprites.player import Player
 from sprites.shopItem import ShopItem
 from tile_builder import build_tile, tile_to_change
+from sprites.enemies import Boss
 
 
 class Game:

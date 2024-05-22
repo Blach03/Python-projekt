@@ -83,7 +83,7 @@ def generate_rooms(map: list[list[int]]) -> list[list[int]]:
                 if j + 1 < m and map[i][j + 1] >= 1:
                     for k in range(6, 9):
                         tile[k] = tile[k][:-1] + "."
-                if map[i][j] != 1.2:
+                if map[i][j] != 1.2 and map[i][j] != 2:
                     tile = generate_room(tile)
                 rooms[i][j] = tile
     return rooms

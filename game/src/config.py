@@ -21,6 +21,7 @@ ROOMS_DATA = "../resources/json/rooms.json"
 
 CHARACTER_SPRITE = "../resources/imgs/character.png"
 BOSS_SPRITE = "../resources/imgs/boss.png"
+BOSS_ATTACK_SPRITE = "../resources/imgs/boss_attacks.png"
 BLOCKS_SPRITE = "../resources/imgs/blocks.png"
 SPIDER_SPRITE = "../resources/imgs/spider.png"
 BULLET_SPRITE = "../resources/imgs/bullets.png"
