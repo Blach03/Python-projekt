@@ -39,6 +39,7 @@ class ShopItem(pygame.sprite.Sprite):
     def purchase_item(self, player, game):
         if player.gold >= self.item.price:
             player.gold -= self.item.price
+            game.items_bought += 1
 
             match self.item.name:  # PRZENIEŚĆ np. takie has_shield do item.player_attribute
                 case "Sentinel Aegis":

@@ -20,7 +20,7 @@ class Spider(pygame.sprite.Sprite):
 
         self.x_change, self.y_change = 0, 0
         self.start_health = (
-            self.game.data.spider.get("start_health") * self.game.difficulty * 40
+            self.game.data.spider.get("start_health") * self.game.difficulty
         )
         self.health = self.start_health
         self.facing = "right"
@@ -89,9 +89,13 @@ class Spider(pygame.sprite.Sprite):
             player.current_hp = min(player.hp, player.current_hp + damage / 20)
 
         self.health -= damage
+        self.game.damage_dealt += damage
 
         if self.health <= 0:
             self.kill()
+            self.game.enemies_killed += 1
+            self.game.player.gold += self.game.data.spider.get("gold")
+            self.game.gold_earned += self.game.data.spider.get("gold")
 
             if player.has_heartguard:
                 player.hp += 1
@@ -242,7 +246,7 @@ class Boss(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = self.x, self.y
 
         self.x_change, self.y_change = 0, 0
-        self.start_health = self.game.data.boss.get("start_health") * self.game.difficulty * 20
+        self.start_health = self.game.data.boss.get("start_health") * self.game.difficulty
         self.health = self.start_health
         self.facing = "right"
 
@@ -308,9 +312,11 @@ class Boss(pygame.sprite.Sprite):
             player.current_hp = min(player.hp, player.current_hp + damage / 20)
 
         self.health -= damage
+        self.game.damage_dealt += damage
 
         if self.health <= 0 and not self.is_dead:
             self.is_dead = True
+            self.game.enemies_killed += 1
             self.animation_loop = 1
             self.animation_pos = 0
 
@@ -409,6 +415,7 @@ class Boss(pygame.sprite.Sprite):
             if self.animation_pos >= len(self.game.data.boss.get("death")):
                 self.death_animation_done = True
                 self.kill()
+                self.game.show_statistics_screen()
                 return
         self.image = self.game.data.boss.get("death")[self.animation_pos]
         self.animation_loop += 1
@@ -431,7 +438,7 @@ class Ball(pygame.sprite.Sprite):
         self.boss = boss
         pygame.sprite.Sprite.__init__(self, self.game.attacks)
 
-        self.damage = damage
+        self.damage = damage * 5
         self.speed = speed
         self.size = size
 
@@ -494,6 +501,7 @@ class Ball(pygame.sprite.Sprite):
 
 class Fire(pygame.sprite.Sprite):
     def __init__(self, game, position, damage, boss, duration=5, size=(48, 48)):
+        super().__init__()
         self.game = game
         self.boss = boss
         pygame.sprite.Sprite.__init__(self, self.game.ground)

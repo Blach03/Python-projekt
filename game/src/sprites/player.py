@@ -48,7 +48,7 @@ class Player(pygame.sprite.Sprite):
 
         self.current_hp = 100
 
-        self.gold = 100000  # for testing
+        self.gold = 1000
 
         self.items = []
         self.potions: list[Potion] = game.data.potions
@@ -161,7 +161,11 @@ class Player(pygame.sprite.Sprite):
                 self.animation_loop = 1
 
     def take_damage(self, damage):
-        self.current_hp -= damage * (1 - defence(self.defense))
+        self.game.damage_blocked += damage
+        damage = damage * (1 - defence(self.defense))
+        self.current_hp -= damage
+        self.game.damage_taken += damage
+        self.game.damage_blocked -= damage
         if self.current_hp <= 0:
             self.game.playing = False
 

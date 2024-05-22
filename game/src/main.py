@@ -12,7 +12,6 @@ from sprites.other import Button, DarkOverlay, DrawSpriteGroup
 from sprites.player import Player
 from sprites.shopItem import ShopItem
 from tile_builder import build_tile, tile_to_change
-from sprites.enemies import Boss
 from sprites.enemies import draw_ripples_boss
 
 
@@ -38,6 +37,20 @@ class Game:
 
         self.difficulty = 1
         self.damage_frame_counter = 0
+        
+        #stats
+        self.enemies_killed = 0
+        self.gold_earned = 0
+        self.damage_dealt = 0
+        self.damage_taken = 0
+        self.damage_blocked = 0
+        self.bullets_shot = 0
+        self.items_bought = 0
+        self.potions_used = 0
+        self.start_time = pygame.time.get_ticks()
+        self.elapsed_time = 0
+        self.score = 0
+
 
     def new(self):
         self.map, self.start, self.end = generate_map()
@@ -61,6 +74,7 @@ class Game:
         self.attacks.update()
         self.ground.update()
         self.enemies.update()
+        self.elapsed_time = (pygame.time.get_ticks() - self.start_time) // 1000
 
     def draw(self):
         self.ground.draw(self.screen)
@@ -176,6 +190,47 @@ class Game:
             self.screen.blit(quit_button.image, quit_button.rect)
             self.clock.tick(60)
             pygame.display.update()
+
+    def show_statistics_screen(self):
+        self.playing = False
+        outro = True
+
+        while outro:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN: 
+                        outro = False
+                        self.running = False
+
+            self.screen.fill((0, 0, 0))
+
+            stats_font = pygame.font.SysFont("Arial", 24)
+            elapsed_minutes = self.elapsed_time // 60
+            elapsed_seconds = self.elapsed_time % 60
+            self.score = self.enemies_killed * 1000 + max(0, 500 - self.elapsed_time) * 100
+            stats = [
+                f"Enemies killed: {self.enemies_killed}",
+                f"Gold earned: {self.gold_earned}",
+                f"Damage dealt: {self.damage_dealt}",
+                f"Damage taken: {self.damage_taken}",
+                f"Damage blocked: {self.damage_blocked}",
+                f"Bullets shot: {self.bullets_shot}",
+                f"Items bought: {self.items_bought}",
+                f"Potions used: {self.potions_used}",
+                f"Time: {elapsed_minutes}m {elapsed_seconds}s",
+                f"Score: {self.score}",
+                "Press Enter to exit..."
+            ]
+
+            for i, stat in enumerate(stats):
+                stat_text = stats_font.render(stat, True, (255, 255, 255))
+                self.screen.blit(stat_text, (50, 50 + i * 30))
+
+            pygame.display.flip()
+            self.clock.tick(60)
 
 
 play_again = True

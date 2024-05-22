@@ -86,8 +86,9 @@ class Data:
     def get_spider_sprites(self):
         sprite_sheet = SpriteSheet(SPIDER_SPRITE)
         self.spider = {
-            "start_health": 7,
+            "start_health": 300,
             "damage": 10,
+            "gold": 150,
             "standing": [
                 sprite_sheet.get_sprite(i * 15, 0, 14, 9, (42, 27)) for i in range(5)
             ],
@@ -106,8 +107,8 @@ class Data:
     def get_boss_sprites(self):
         sprite_sheet = SpriteSheet(BOSS_SPRITE)
         self.boss = {
-            "start_health": 70,
-            "damage": 10,
+            "start_health": 10000,
+            "damage": 20,
             "standing": [
                 sprite_sheet.get_sprite(i * 64, 0, 64, 64, (128, 128)) for i in range(6)
             ],

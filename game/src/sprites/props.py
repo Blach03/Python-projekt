@@ -8,6 +8,7 @@ from config import *
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, game, speed, target):
         self.game = game
+        game.bullets_shot += 1
         self.groups = self.game.attacks
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.x, self.y = (

@@ -88,6 +88,7 @@ class Potion:
 
     def use(self, player):
         self.count -= 1
+        player.game.potions_used += 1
         match self.name:
 
             case "Healing potion":
