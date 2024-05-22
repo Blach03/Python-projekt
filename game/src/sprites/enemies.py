@@ -335,7 +335,7 @@ class Boss(pygame.sprite.Sprite):
             (self.game.player.rect.centerx - self.rect.centerx) ** 2
             + (self.game.player.rect.centery - self.rect.centery) ** 2
         ) ** 0.5
-        return distance < 400
+        return distance < 500
 
     def damage_player(self):
         if self.calculate_distance() and self.damage_cooldown > 180:
@@ -354,9 +354,11 @@ class Boss(pygame.sprite.Sprite):
                         spawn_fires(self.game, self, self.damage, (self.rect.centerx, self.rect.centery))
                     elif x == 1:
                         Ball(self.game, (self.x + 32, self.y + 32), self.damage, self)
+                        self.spawn_balls()
                     else:
                         self.health = min(self.start_health, self.health + self.start_health/5)
-                    self.spawn_balls()
+                        trigger_multiple_ripples((self.rect.centerx, self.rect.centery))
+                        self.game.player.current_hp -= (self.game.player.hp/20)
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
@@ -419,6 +421,7 @@ class Boss(pygame.sprite.Sprite):
 
         threading.Thread(target=create_ball, args=(0.8,)).start()
         threading.Thread(target=create_ball, args=(1.6,)).start()
+
 
 
 
@@ -493,7 +496,7 @@ class Fire(pygame.sprite.Sprite):
     def __init__(self, game, position, damage, boss, duration=5, size=(48, 48)):
         self.game = game
         self.boss = boss
-        pygame.sprite.Sprite.__init__(self, self.game.attacks)
+        pygame.sprite.Sprite.__init__(self, self.game.ground)
 
         self.damage = damage
         self.size = size
@@ -558,10 +561,25 @@ def spawn_fires(game, boss, damage, position, duration=5, size=(48, 48)):
 
     direction = pygame.math.Vector2(player_pos[0] - boss_pos[0], player_pos[1] - boss_pos[1]).normalize()
     
+    opposite_direction = -direction
+    
     perpendicular = pygame.math.Vector2(-direction.y, direction.x) * TILE_SIZE
 
+    fire_positions = generate_fire_positions(boss_pos, direction, perpendicular, game)
+    
+    opposite_fire_positions = generate_fire_positions(boss_pos, opposite_direction, perpendicular, game)
+    
+    positions = fire_positions + opposite_fire_positions
+    for index, fire_position in enumerate(positions):
+        threading.Thread(target=create_fire, args=(game, fire_position, damage, boss, duration, size, index * 0.02)).start()
+
+def generate_fire_positions(start_pos, direction, perpendicular, game):
     fire_positions = []
-    current_position = pygame.math.Vector2(boss_pos[0] + TILE_SIZE / 2, boss_pos[1] + TILE_SIZE / 2)
+    current_position = pygame.math.Vector2(start_pos[0] + TILE_SIZE / 2, start_pos[1] + TILE_SIZE / 2)
+    
+    fire_positions.append((current_position.x, current_position.y))
+    fire_positions.append((current_position.x + perpendicular.x, current_position.y + perpendicular.y))
+    fire_positions.append((current_position.x - perpendicular.x, current_position.y - perpendicular.y))
     
     while True:
         current_position += direction * TILE_SIZE
@@ -572,7 +590,41 @@ def spawn_fires(game, boss, damage, position, duration=5, size=(48, 48)):
         if (current_position.x < 0 or current_position.x > game.screen.get_width() or 
             current_position.y < 0 or current_position.y > game.screen.get_height()):
             break
+    
+    return fire_positions
 
-    for fire_position in fire_positions:
-        fire = Fire(game, fire_position, damage, boss, duration, size)
-        game.attacks.add(fire)
+def create_fire(game, position, damage, boss, duration, size, delay):
+    time.sleep(delay)
+    fire = Fire(game, position, damage, boss, duration, size)
+    game.ground.add(fire)
+
+
+ripples = []
+
+def trigger_ripple(center, delay=0):
+    def create_ripple():
+        time.sleep(delay)
+        ripples.append([center, 0, 255])
+
+    threading.Thread(target=create_ripple).start()
+
+def draw_ripples_boss(game):
+    for ripple in ripples[:]:
+        _, radius, alpha = ripple
+        if alpha <= 0:
+            ripples.remove(ripple)
+            continue
+        new_radius = radius + 10
+        new_alpha = max(alpha - 4, 0)
+        surface = pygame.Surface((new_radius * 2, new_radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(
+            surface, (255, 165, 0, new_alpha), (new_radius, new_radius), new_radius
+        ) 
+        surface_rect = surface.get_rect(center=ripple[0])
+        game.screen.blit(surface, surface_rect)
+        ripple[1] = new_radius
+        ripple[2] = new_alpha
+
+def trigger_multiple_ripples(center):
+    for i in range(3):
+        trigger_ripple(center, delay=i * 0.1)

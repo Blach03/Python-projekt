@@ -19,6 +19,9 @@ def build_tile(game, tile: list[list[int]]) -> None:
                 ShopItem(game, j, i)
             elif elem == "M":
                 Ground(game, j, i)
+                Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
+            elif elem == "E":
+                Ground(game, j, i)
                 Boss(game, (j * TILE_SIZE, i * TILE_SIZE))
             if random.randint(1, 10) > 9 and elem != "I":
                 CobWeb(game, j, i)

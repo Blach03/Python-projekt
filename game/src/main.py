@@ -13,6 +13,7 @@ from sprites.player import Player
 from sprites.shopItem import ShopItem
 from tile_builder import build_tile, tile_to_change
 from sprites.enemies import Boss
+from sprites.enemies import draw_ripples_boss
 
 
 class Game:
@@ -73,6 +74,7 @@ class Game:
         draw_gold_hp(self)
         draw_circle(self)
         draw_ripples(self)
+        draw_ripples_boss(self)
         shop_item = self.player_near_shop_item()
         if shop_item is not None:
             display_shop_item(self, shop_item)

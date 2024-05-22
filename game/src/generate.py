@@ -28,7 +28,7 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
         x = choices([0, 1, 2, 3], weights)[0]
         curr_location = [curr_location[0] + neigh[x][0], curr_location[1] + neigh[x][1]]
         if map[curr_location[0]][curr_location[1]] == 0:
-            map[curr_location[0]][curr_location[1]] = 1
+            map[curr_location[0]][curr_location[1]] = 2 # changed from 1 to 2 for boss testing
         if 10 < i < 40:
             x = randint(0, 15)
             if x == 1:
@@ -73,6 +73,8 @@ def generate_rooms(map: list[list[int]]) -> list[list[int]]:
                     tile = data["shop"].copy()
                 else:
                     tile = data["empty"].copy()
+                if map[i][j] == 2:
+                    tile[7] = tile[7][: 10] + "E" + tile[7][11 :]
                 if map[i][j - 1] >= 1:
                     for k in range(6, 9):
                         tile[k] = "." + tile[k][1:]
