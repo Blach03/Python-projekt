@@ -50,6 +50,7 @@ class Game:
         self.start_time = pygame.time.get_ticks()
         self.elapsed_time = 0
         self.score = 0
+        self.healing = 0
 
 
     def new(self):
@@ -195,6 +196,9 @@ class Game:
         self.playing = False
         outro = True
 
+        background_image = pygame.image.load("../resources/imgs/stat_screen.jpg")
+        background_image = pygame.transform.scale(background_image, self.screen.get_size())
+
         while outro:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -205,18 +209,24 @@ class Game:
                         outro = False
                         self.running = False
 
-            self.screen.fill((0, 0, 0))
+            self.screen.blit(background_image, (0, 0))
 
-            stats_font = pygame.font.SysFont("Arial", 24)
+            stats_font = pygame.font.SysFont("Times New Roman", 40)
             elapsed_minutes = self.elapsed_time // 60
             elapsed_seconds = self.elapsed_time % 60
-            self.score = self.enemies_killed * 1000 + max(0, 500 - self.elapsed_time) * 100
+            self.score = max(0, 1000 - self.elapsed_time) * 80
+            if self.enemies_killed < 100:
+                penalty = 0
+                for i in range(self.enemies_killed):
+                    self.score += 1000 - penalty
+                    penalty += 10
+            else:
+                self.score += 50500
             stats = [
                 f"Enemies killed: {self.enemies_killed}",
                 f"Gold earned: {self.gold_earned}",
                 f"Damage dealt: {self.damage_dealt}",
-                f"Damage taken: {self.damage_taken}",
-                f"Damage blocked: {self.damage_blocked}",
+                f"Healing done: {self.healing}",
                 f"Bullets shot: {self.bullets_shot}",
                 f"Items bought: {self.items_bought}",
                 f"Potions used: {self.potions_used}",
@@ -226,8 +236,9 @@ class Game:
             ]
 
             for i, stat in enumerate(stats):
-                stat_text = stats_font.render(stat, True, (255, 255, 255))
-                self.screen.blit(stat_text, (50, 50 + i * 30))
+                stat_text = stats_font.render(stat, True, (0, 0, 0)) 
+                text_rect = stat_text.get_rect(center=(self.screen.get_width() / 2, 180 + i * 45))
+                self.screen.blit(stat_text, text_rect)
 
             pygame.display.flip()
             self.clock.tick(60)

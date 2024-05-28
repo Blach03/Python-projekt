@@ -92,6 +92,7 @@ class Potion:
         match self.name:
 
             case "Healing potion":
+                player.game.healing += min(self.stat, player.hp - player.current_hp)
                 player.current_hp = min(player.current_hp + self.stat, player.hp)
 
             case "Defence potion":
@@ -113,6 +114,8 @@ class Potion:
             case "Regeneration potion":
                 def regenerate():
                     for _ in range(60):
+                        if player.current_hp < player.hp:
+                            player.game.healing += self.stat
                         player.current_hp = min(player.current_hp + self.stat, player.hp)
                         time.sleep(1)
 

@@ -28,7 +28,7 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
         x = choices([0, 1, 2, 3], weights)[0]
         curr_location = [curr_location[0] + neigh[x][0], curr_location[1] + neigh[x][1]]
         if map[curr_location[0]][curr_location[1]] == 0:
-            map[curr_location[0]][curr_location[1]] = 2 # changed from 1 to 2 for boss testing
+            map[curr_location[0]][curr_location[1]] = 1 # changed from 1 to 2 for boss testing
         if 10 < i < 40:
             x = randint(0, 15)
             if x == 1:

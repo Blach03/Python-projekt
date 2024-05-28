@@ -309,6 +309,7 @@ class Boss(pygame.sprite.Sprite):
             damage += self.health / 20
 
         if player.has_soulthirster:
+            player.game.healing += min(player.hp - player.current_hp, damage / 20)
             player.current_hp = min(player.hp, player.current_hp + damage / 20)
 
         self.health -= damage
@@ -323,6 +324,7 @@ class Boss(pygame.sprite.Sprite):
             if player.has_heartguard:
                 player.hp += 1
             if player.has_amulet:
+                player.game.healing += min(player.hp - player.current_hp, 10)
                 player.current_hp = min(player.hp, player.current_hp + 10)
 
     def draw(self, surface):
