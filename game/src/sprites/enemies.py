@@ -366,7 +366,7 @@ class Boss(pygame.sprite.Sprite):
                     else:
                         self.health = min(self.start_health, self.health + self.start_health/5)
                         trigger_multiple_ripples((self.rect.centerx, self.rect.centery))
-                        self.game.player.current_hp -= (self.game.player.hp/20)
+                        self.game.player.current_hp -= (self.game.player.hp/10)
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
@@ -444,8 +444,14 @@ class Ball(pygame.sprite.Sprite):
         self.speed = speed
         self.size = size
 
-        self.images = [pygame.transform.scale(sprite, self.size) for sprite in self.game.data.ball_flying]
-        self.image = self.images[0]
+        try:
+            self.images = [pygame.transform.scale(sprite, self.size) for sprite in self.game.data.ball_flying]
+            self.image = self.images[0]
+        except Exception as e:
+            print(f"Error loading Ball images: {e}")
+            self.images = []
+            self.image = pygame.Surface(self.size)
+
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
@@ -462,13 +468,16 @@ class Ball(pygame.sprite.Sprite):
         self.check_collision()
 
     def animate(self):
-        self.animation_loop += 1
-        if self.animation_loop >= 4:
-            self.animation_loop = 1
-            self.animation_pos += 1
-            if self.animation_pos >= len(self.images):
-                self.animation_pos = 0
-            self.image = self.images[self.animation_pos]
+        try:
+            self.animation_loop += 1
+            if self.animation_loop >= 4:
+                self.animation_loop = 1
+                self.animation_pos += 1
+                if self.animation_pos >= len(self.images):
+                    self.animation_pos = 0
+                self.image = self.images[self.animation_pos]
+        except AttributeError:
+            pass
 
     def check_collision(self):
         if pygame.sprite.collide_rect(self, self.game.player):
@@ -511,8 +520,15 @@ class Fire(pygame.sprite.Sprite):
         self.damage = damage
         self.size = size
         self.duration = duration
-        self.images = [pygame.transform.scale(sprite, self.size) for sprite in self.game.data.fire]
-        self.image = self.images[0]
+
+        try:
+            self.images = [pygame.transform.scale(sprite, self.size) for sprite in self.game.data.fire]
+            self.image = self.images[0]
+        except Exception as e:
+            print(f"Error loading Fire images: {e}")
+            self.images = []
+            self.image = pygame.Surface(self.size)
+
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = position
 
@@ -529,13 +545,16 @@ class Fire(pygame.sprite.Sprite):
             self.kill()
 
     def animate(self):
-        self.animation_loop += 1
-        if self.animation_loop >= 4:
-            self.animation_loop = 1
-            self.animation_pos += 1
-            if self.animation_pos >= len(self.images):
-                self.animation_pos = 0
-            self.image = self.images[self.animation_pos]
+        try:
+            self.animation_loop += 1
+            if self.animation_loop >= 4:
+                self.animation_loop = 1
+                self.animation_pos += 1
+                if self.animation_pos >= len(self.images):
+                    self.animation_pos = 0
+                self.image = self.images[self.animation_pos]
+        except AttributeError:
+            pass
 
     def check_damage(self):
         current_time = pygame.time.get_ticks()

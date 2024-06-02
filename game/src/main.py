@@ -73,12 +73,18 @@ class Game:
     def update(self):
         self.player.update()
         self.attacks.update()
-        self.ground.update()
+        try:
+            self.ground.update()
+        except AttributeError:
+            pass
         self.enemies.update()
         self.elapsed_time = (pygame.time.get_ticks() - self.start_time) // 1000
 
     def draw(self):
-        self.ground.draw(self.screen)
+        try:
+            self.ground.draw(self.screen)
+        except AttributeError:
+            pass
         self.overlay.draw(self.screen)
         self.player.draw(self.screen)
         self.enemies.draw(self.screen)
