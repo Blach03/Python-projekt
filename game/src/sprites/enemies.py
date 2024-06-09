@@ -2,6 +2,7 @@ import random
 import threading
 import time
 import pygame
+from enum import Enum
 
 from player_info import trigger_ripple
 from sprites.player import collide_blocks
@@ -584,6 +585,7 @@ class Fire(pygame.sprite.Sprite):
                             enemy.register_hit(self.game.player, self.damage * 5)
             self.last_damage_time = current_time
 
+
 def spawn_fires(game, boss, damage, position, duration=5, size=(48, 48)):
     player_pos = game.player.rect.center
     boss_pos = position
@@ -601,6 +603,7 @@ def spawn_fires(game, boss, damage, position, duration=5, size=(48, 48)):
     positions = fire_positions + opposite_fire_positions
     for index, fire_position in enumerate(positions):
         threading.Thread(target=create_fire, args=(game, fire_position, damage, boss, duration, size, index * 0.02)).start()
+
 
 def generate_fire_positions(start_pos, direction, perpendicular, game):
     fire_positions = []
@@ -622,6 +625,7 @@ def generate_fire_positions(start_pos, direction, perpendicular, game):
     
     return fire_positions
 
+
 def create_fire(game, position, damage, boss, duration, size, delay):
     time.sleep(delay)
     fire = Fire(game, position, damage, boss, duration, size)
@@ -630,12 +634,14 @@ def create_fire(game, position, damage, boss, duration, size, delay):
 
 ripples = []
 
-def trigger_ripple(center, delay=0):
+
+def trigger_ripple(center, delay=0.):
     def create_ripple():
         time.sleep(delay)
         ripples.append([center, 0, 255])
 
     threading.Thread(target=create_ripple).start()
+
 
 def draw_ripples_boss(game):
     for ripple in ripples[:]:
@@ -654,6 +660,312 @@ def draw_ripples_boss(game):
         ripple[1] = new_radius
         ripple[2] = new_alpha
 
+
 def trigger_multiple_ripples(center):
     for i in range(3):
         trigger_ripple(center, delay=i * 0.1)
+
+
+class EnemyState(Enum):
+    STANDING = 0
+    WALKING = 1
+    ATTACKING = 2
+    DYING = 3
+
+    def get_name(self):
+        return self.name.lower()
+
+
+class BlueBlob(pygame.sprite.Sprite):
+    def __init__(self, game, position):
+        self.game = game
+        self.x, self.y = position
+        pygame.sprite.Sprite.__init__(self, self.game.enemies)
+
+        self.data: dict = self.game.data.blue_blob
+        self.image = self.data.get("walking")[0]
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = self.x, self.y
+
+        self.x_change, self.y_change = 0, 0
+        self.start_health = self.data.get("start_health") * self.game.difficulty
+        self.health = self.start_health
+        self.facing = "right"
+
+        self.damage = self.data.get("damage") * self.game.difficulty
+        self.damage_cooldown = 0
+
+        self.animation_loop = 1
+        self.animation_pos = 0
+        self.animation_frequency = 10
+
+        self.state = EnemyState.WALKING
+
+    def draw(self, surface):
+        if self.health != self.start_health and self.state != EnemyState.DYING:
+            new_width: int = self.rect.width * (self.health / self.start_health)
+            pygame.draw.rect(surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8))
+            pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
+        surface.blit(self.image, self.rect, None, 0)
+
+    def register_hit(self, player, damage):
+        if player.has_scythe and self not in player.scythe_used_on:
+            player.scythe_used_on.append(self)
+            damage *= 3
+        if player.has_polearm and random.randint(1, 10) < 4:
+            damage *= 2
+        if player.has_edge and player.current_hp > self.health:
+            damage *= 1.25
+        if player.has_wyrmblade:
+            damage += self.health / 20
+        if player.has_soulthirster:
+            player.current_hp = min(player.hp, player.current_hp + damage / 20)
+
+        self.health -= damage
+        self.game.damage_dealt += damage
+
+        if self.health <= 0:
+            self.state = EnemyState.DYING
+
+            self.animation_pos = 0
+            self.animation_frequency = 2
+            self.game.enemies_killed += 1
+            self.game.player.gold += self.data.get("gold")
+            self.game.gold_earned += self.data.get("gold")
+
+            if player.has_heartguard:
+                player.hp += 1
+            if player.has_amulet:
+                player.current_hp = min(player.hp, player.current_hp + 10)
+
+    def update(self):
+        if self.state == EnemyState.WALKING:
+            self.move()
+        self.attack()
+        self.animate()
+
+        self.x += self.x_change
+        self.rect.x = self.x
+        self.y += self.y_change
+        self.rect.y = self.y
+        self.x_change, self.y_change = 0, 0
+
+    def move(self):
+        player_pos = self.game.player.rect.x, self.game.player.rect.y
+        spd = 0.8
+        self.x_change += (spd if player_pos[0] > self.rect.x else -spd if player_pos[0] < self.rect.x else 0)
+        self.y_change += (spd if player_pos[1] > self.rect.y else -spd if player_pos[1] < self.rect.y else 0)
+        if self.x_change < 0:
+            self.facing = "left"
+        elif self.x_change > 0:
+            self.facing = "right"
+        self.x_change *= random.randint(5, 15) / 10
+        self.y_change *= random.randint(5, 15) / 10
+
+    def attack(self):
+        self.damage_cooldown += 1
+        if self.rect.colliderect(self.game.player) and self.damage_cooldown > 60:
+            self.state = EnemyState.ATTACKING
+            self.animation_pos = 0
+            self.damage_cooldown = 1
+
+    def animate(self):
+        if self.animation_loop < self.animation_frequency:
+            self.animation_loop += 1
+        else:
+            self.animation_loop = 1
+            self.animation_pos += 1
+            if self.animation_pos >= len(self.data.get(self.state.get_name())):
+                self.animation_pos = 0
+                if self.state == EnemyState.DYING:
+                    self.kill()
+                    return
+                elif self.state == EnemyState.ATTACKING:
+                    self.game.player.take_damage(self.damage)
+                    self.state = EnemyState.WALKING
+            self.image = self.data.get(self.state.get_name())[self.animation_pos] if self.facing == "right" \
+                else pygame.transform.flip(self.data.get(self.state.get_name())[self.animation_pos], True, False)
+
+
+class RedDevil(pygame.sprite.Sprite):
+    def __init__(self, game, position):
+        self.game = game
+        self.x, self.y = position
+        pygame.sprite.Sprite.__init__(self, self.game.enemies)
+
+        self.data: dict = self.game.data.red_devil
+        self.image = self.data.get("standing")[0]
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = self.x, self.y
+
+        self.x_change, self.y_change = 0, 0
+        self.start_health = self.data.get("start_health") * self.game.difficulty
+        self.health = self.start_health
+        self.facing = "right"
+
+        self.damage = self.data.get("damage") * self.game.difficulty
+        self.damage_cooldown = 121
+
+        self.animation_loop = 1
+        self.animation_pos = 0
+        self.animation_frequency = 10
+
+        self.state = EnemyState.STANDING
+
+    def draw(self, surface):
+        if self.health != self.start_health and self.state != EnemyState.DYING:
+            new_width: int = self.rect.width * (self.health / self.start_health)
+            pygame.draw.rect(surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8))
+            pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
+        surface.blit(self.image, self.rect, None, 0)
+
+    def register_hit(self, player, damage):
+        if player.has_scythe and self not in player.scythe_used_on:
+            player.scythe_used_on.append(self)
+            damage *= 3
+        if player.has_polearm and random.randint(1, 10) < 4:
+            damage *= 2
+        if player.has_edge and player.current_hp > self.health:
+            damage *= 1.25
+        if player.has_wyrmblade:
+            damage += self.health / 20
+        if player.has_soulthirster:
+            player.current_hp = min(player.hp, player.current_hp + damage / 20)
+
+        self.health -= damage
+        self.game.damage_dealt += damage
+
+        if self.health <= 0:
+            self.state = EnemyState.DYING
+            self.animation_pos = 0
+            self.game.enemies_killed += 1
+            self.game.player.gold += self.data.get("gold")
+            self.game.gold_earned += self.data.get("gold")
+
+            if player.has_heartguard:
+                player.hp += 1
+            if player.has_amulet:
+                player.current_hp = min(player.hp, player.current_hp + 10)
+
+    def update(self):
+        if self.state != EnemyState.DYING:
+            is_near_player = self.near_player((self.game.player.rect.x, self.game.player.rect.y))
+            player_pos = self.game.player.rect.x, self.game.player.rect.y
+            if not is_near_player and self.state != EnemyState.ATTACKING and self.damage_cooldown > 120:
+                if self.state != EnemyState.WALKING:
+                    self.state = EnemyState.WALKING
+                    self.animation_pos = 0
+                self.move(player_pos)
+            self.facing = "right" if player_pos[0] > self.rect.x else "left"
+
+            self.x += self.x_change
+            self.rect.x = self.x
+            collide_blocks(self, "x")
+            self.y += self.y_change
+            self.rect.y = self.y
+            collide_blocks(self, "y")
+            self.x_change, self.y_change = 0, 0
+
+            self.attack(is_near_player)
+
+        self.animate()
+
+    def move(self, player_pos):
+        spd = 1.2
+        x_distance = abs(player_pos[0] - self.rect.x)
+        if x_distance > TILE_SIZE * 2:
+            self.x_change += (spd if player_pos[0] > self.rect.x else -spd if player_pos[0] < self.rect.x else 0)
+            self.x_change *= random.randint(5, 15) / 10
+        self.y_change += (spd if player_pos[1] > self.rect.y else -spd if player_pos[1] < self.rect.y else 0)
+        self.y_change *= random.randint(5, 15) / 10
+
+    def near_player(self, player_pos):
+        return abs(player_pos[0] - self.rect.x) <= 4*TILE_SIZE and abs(player_pos[1] - self.rect.y) <= 0.3*TILE_SIZE
+
+    def attack(self, is_near_player):
+        self.damage_cooldown += 1
+        if is_near_player and self.damage_cooldown > 120:
+            self.state = EnemyState.ATTACKING
+            self.animation_pos = 0
+            self.damage_cooldown = 1
+            Projectile(self.game, self.facing, self.rect.center, self.damage)
+
+    def animate(self):
+        if self.animation_loop < self.animation_frequency:
+            self.animation_loop += 1
+        else:
+            self.animation_loop = 1
+            self.animation_pos += 1
+            if self.animation_pos >= len(self.data.get(self.state.get_name())):
+                self.animation_pos = 0
+                if self.state == EnemyState.DYING:
+                    self.kill()
+                    return
+                elif self.state == EnemyState.ATTACKING:
+                    self.state = EnemyState.STANDING
+            self.image = self.data.get(self.state.get_name())[self.animation_pos] if self.facing == "right" \
+                else pygame.transform.flip(self.data.get(self.state.get_name())[self.animation_pos], True, False)
+
+
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self, game, direction, position, damage):
+        self.game = game
+        pygame.sprite.Sprite.__init__(self, game.enemies)
+        self.direction = direction
+        self.position = position
+        self.damage = damage
+        self.images = self.game.data.red_devil.get("bullet")
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.rect.width = 3
+        self.rect.height = 3
+        self.rect.x = position[0]
+        self.rect.y = position[1]
+
+        self.animation_pos = 0
+        self.animation_loop = 1
+
+        self.exploding = False
+
+    def update(self):
+        self.animation_loop += 1
+        if not self.exploding:
+            self.rect.x += 2 if self.direction == "right" else -2
+            if self.animation_loop > 10:
+                self.animation_loop = 1
+                self.animation_pos += 1
+                if self.animation_pos >= 5:
+                    self.animation_pos = 3
+                self.image = self.images[self.animation_pos] if self.direction == "right" \
+                    else pygame.transform.flip(self.images[self.animation_pos], True, False)
+            if pygame.sprite.collide_rect(self, self.game.player):
+                self.game.player.take_damage(self.damage)
+                self.explode()
+            if self.rect.x < 0 or self.rect.x > self.game.screen.get_width():
+                self.kill()
+            hits = pygame.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                self.explode()
+        else:
+            if self.animation_loop > 10:
+                if self.animation_pos >= 7:
+                    self.kill()
+                    return
+                self.image = self.images[6]
+                self.animation_loop = 1
+                self.animation_pos += 1
+
+    def explode(self):
+        self.exploding = True
+        self.animation_loop = 1
+        self.image = self.images[5]
+        self.animation_pos = 6
+
+    def draw(self, surface):
+        position = [self.rect.x, self.rect.y - self.image.get_rect().height // 2 + 1]
+        if self.direction == "right":
+            position[0] += 3 - self.image.get_rect().width
+        surface.blit(self.image, position, None, 0)
+
+    def register_hit(self, player, damage):
+        self.kill()

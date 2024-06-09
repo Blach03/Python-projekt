@@ -52,7 +52,6 @@ class Game:
         self.score = 0
         self.healing = 0
 
-
     def new(self):
         self.map, self.start, self.end = generate_map()
         self.rooms = generate_rooms(self.map)

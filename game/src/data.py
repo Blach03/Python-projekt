@@ -36,6 +36,12 @@ class Data:
         self.spider = None
         self.get_spider_sprites()
 
+        self.blue_blob = None
+        self.get_blue_blob_sprites()
+
+        self.red_devil = None
+        self.get_red_devil_sprites()
+
         self.boss = None
         self.get_boss_sprites()
 
@@ -102,6 +108,54 @@ class Data:
                 sprite_sheet.get_sprite(1 + i * 24, 30, 23, 20, (46, 40))
                 for i in range(6)
             ],
+        }
+
+    def get_blue_blob_sprites(self):
+        sprite_sheet = SpriteSheet(BLUE_BLOB_SPRITE)
+        scale = 7
+        self.blue_blob = {
+            "start_health": 500,
+            "damage": 15,
+            "gold": 300,
+            "walking": [
+                sprite_sheet.get_sprite(3 + i * 32, 1, 27, 30, (9*scale, 10*scale)) for i in range(4)
+            ],
+            "attacking": [
+                sprite_sheet.get_sprite(3 + i * 32, 33, 27, 30, (9*scale, 10*scale)) for i in range(4)
+            ],
+            "dying": [
+                sprite_sheet.get_sprite(3 + i * 32, 97, 27, 30, (9*scale, 10*scale)) for i in range(7)
+            ]
+        }
+
+    def get_red_devil_sprites(self):
+        sprite_sheet = SpriteSheet(RED_DEVIL_SPRITE)
+        scale = 5.5
+        self.red_devil = {
+            "start_health": 300,
+            "damage": 30,
+            "gold": 230,
+            "standing": [
+                sprite_sheet.get_sprite(i * 32, 0, 15, 13, (7.5*scale, 6.5*scale)) for i in range(4)
+            ],
+            "walking": [
+                sprite_sheet.get_sprite(i * 32, 14, 15, 15, (7.5 * scale, 7.5 * scale)) for i in range(8)
+            ],
+            "attacking": [
+                sprite_sheet.get_sprite(i * 32, 29, 15, 13, (7.5 * scale, 6.5 * scale)) for i in range(6)
+            ],
+            "dying": [
+                sprite_sheet.get_sprite(i * 32, 43, 15, 13, (7.5 * scale, 6.5 * scale)) for i in range(6)
+            ],
+            "bullet": [
+                sprite_sheet.get_sprite(6, 62, 1, 1, (0.5 * scale, 0.5 * scale)),
+                sprite_sheet.get_sprite(37, 61, 3, 4, (1.5 * scale, 2 * scale)),
+                sprite_sheet.get_sprite(73, 61, 19, 3, (9.5 * scale, 1.5 * scale)),
+                sprite_sheet.get_sprite(115, 61, 9, 3, (4.5 * scale, 1.5 * scale)),
+                sprite_sheet.get_sprite(151, 61, 5, 3, (2.5 * scale, 1.5 * scale)),
+                sprite_sheet.get_sprite(184, 58, 4, 8, (2 * scale, 4 * scale)),
+                sprite_sheet.get_sprite(220, 58, 4, 10, (2 * scale, 5 * scale)),
+            ]
         }
 
     def get_boss_sprites(self):

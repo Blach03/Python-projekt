@@ -3,9 +3,8 @@ import random
 from config import *
 from map import update_map
 from sprites.blocks import CobWeb, Ground, Wall
-from sprites.enemies import Spider, Boss
+from sprites.enemies import Spider, BlueBlob, RedDevil, Boss
 from sprites.shopItem import ShopItem
-
 
 
 def build_tile(game, tile: list[list[int]]) -> None:
@@ -19,7 +18,13 @@ def build_tile(game, tile: list[list[int]]) -> None:
                 ShopItem(game, j, i)
             elif elem == "M":
                 Ground(game, j, i)
-                Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
+                number = random.randint(1, 10)
+                if number < 5:    # 40 %
+                    Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
+                elif number < 8:  # 30 %
+                    BlueBlob(game, (j * TILE_SIZE, i * TILE_SIZE))
+                else:
+                    RedDevil(game, (j * TILE_SIZE, i * TILE_SIZE))
             elif elem == "E":
                 Ground(game, j, i)
                 Boss(game, (j * TILE_SIZE, i * TILE_SIZE))

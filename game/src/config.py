@@ -24,6 +24,8 @@ BOSS_SPRITE = "../resources/imgs/boss.png"
 BOSS_ATTACK_SPRITE = "../resources/imgs/boss_attacks.png"
 BLOCKS_SPRITE = "../resources/imgs/blocks.png"
 SPIDER_SPRITE = "../resources/imgs/spider.png"
+BLUE_BLOB_SPRITE = "../resources/imgs/blue_blob.png"
+RED_DEVIL_SPRITE = "../resources/imgs/red_devil.png"
 BULLET_SPRITE = "../resources/imgs/bullets.png"
 ATTACK_SPRITE = "../resources/imgs/attack.png"
 
