@@ -7,6 +7,7 @@ data = json.load(open(ROOMS_DATA))
 
 
 def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
+    """Generates matrix with room types indicated by numbers"""
     n = 101
     shops = 0
     map = [[0] * n for _ in range(n)]
@@ -20,7 +21,7 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
 
     curr_location = [50, 50]
     neigh = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    for i in range(50):
+    for i in range(40):
         for el in neigh:
             if map[curr_location[0] + el[0]][curr_location[1] + el[1]] == 0:
                 if randint(0, 3) == 0:
@@ -28,20 +29,20 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
         x = choices([0, 1, 2, 3], weights)[0]
         curr_location = [curr_location[0] + neigh[x][0], curr_location[1] + neigh[x][1]]
         if map[curr_location[0]][curr_location[1]] == 0:
-            map[curr_location[0]][curr_location[1]] = 1 # changed from 1 to 2 for boss testing
-        if 10 < i < 40:
+            map[curr_location[0]][curr_location[1]] = 1
+        if 5 < i:
             x = randint(0, 15)
             if x == 1:
                 map[curr_location[0]][curr_location[1]] = 1.2  # shop
                 shops += 1
-        if i == 40 and shops == 0:
+        if i == 30 and shops == 0:
             map[curr_location[0]][
                 curr_location[1]
             ] = 1.2  # pity shop so that there is at least 1
     map[curr_location[0]][curr_location[1]] = 2
     map[50][50] = 3
 
-    def remove_unnecessary_rows_columns():
+    def remove_unnecessary_rows_columns() -> list[list[int]]:
         rows_to_keep = [i for i, row in enumerate(map) if any(row)]
         cols_to_keep = [
             j for j in range(len(map[0])) if any(map[i][j] for i in rows_to_keep)
@@ -64,6 +65,7 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
 
 
 def generate_rooms(map: list[list[int]]) -> list[list[int]]:
+    """Generates doorways and enemies for each room"""
     n, m = len(map), len(map[0])
     rooms = [[0] * m for _ in range(n)]
     for i in range(n):
@@ -92,8 +94,8 @@ def generate_rooms(map: list[list[int]]) -> list[list[int]]:
 
 
 def generate_room(room: list[str]) -> list[str]:
-
-    def add_shape(j_length, k_length):
+    """Generates walls in the room"""
+    def add_shape(j_length: int, k_length: int):
         for j in range(j_length):
             row = list(room[coords[1] + j])
             for k in range(k_length):

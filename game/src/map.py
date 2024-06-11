@@ -62,7 +62,8 @@ for index, path in MAP_IMAGE_PATHS:
     images[index] = pygame.transform.scale(image, (MAP_TILE_SIZE, MAP_TILE_SIZE))
 
 
-def combine_images(matrix):
+def combine_images(matrix: list[list[int]]) -> pygame.Surface:
+    """Uses map matrix to generate map using images that indicate room types"""
     rows = len(matrix)
     cols = len(matrix[0])
 

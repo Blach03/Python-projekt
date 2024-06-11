@@ -89,7 +89,7 @@ class Player(pygame.sprite.Sprite):
         if self.last_shooting > 10000:
             self.last_shooting = 1
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         surface.blit(self.image, self.rect)
 
     def interaction(self):

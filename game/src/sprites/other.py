@@ -9,7 +9,7 @@ class DrawSpriteGroup(pygame.sprite.Group):
     def __init__(self):
         pygame.sprite.Group.__init__(self)
 
-    def draw(self, surface, bgsurf=None, special_flags=0):
+    def draw(self, surface: pygame.Surface, bgsurf=None, special_flags=0):
         for sprite in self.sprites():
             sprite.draw(surface)
 
@@ -20,7 +20,7 @@ class DarkOverlay:
         self.image.fill((0, 0, 0, OVERLAY_COVERAGE))
         self.rect = self.image.get_rect()
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         surface.blit(self.image, (0, 0))
 
 
@@ -45,6 +45,7 @@ class Button:
 
 
 def defence(defence) -> float:
+    """Calculates damage reduction from defence"""
     percentage = (22.97 * math.log(0.162 * defence + 1.00)) / 100
     percentage = min(percentage, 0.95)
     return percentage

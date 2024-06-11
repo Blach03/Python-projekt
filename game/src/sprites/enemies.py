@@ -72,7 +72,7 @@ class Spider(pygame.sprite.Sprite):
         self.x_change *= random.randint(5, 15) / 10
         self.y_change *= random.randint(5, 15) / 10
 
-    def register_hit(self, player, damage):
+    def register_hit(self, player, damage: float):
         if player.has_scythe and self not in player.scythe_used_on:
             player.scythe_used_on.append(self)
             damage *= 3
@@ -103,7 +103,7 @@ class Spider(pygame.sprite.Sprite):
             if player.has_amulet:
                 player.current_hp = min(player.hp, player.current_hp + 10)
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         if self.health != self.start_health:
             new_width: int = self.rect.width * (self.health / self.start_health)
             pygame.draw.rect(
@@ -114,7 +114,8 @@ class Spider(pygame.sprite.Sprite):
             )
         surface.blit(self.image, self.rect, None, 0)
 
-    def calculate_distance(self) -> float:
+    def calculate_distance(self) -> bool:
+        """Returns True if the player is near a spider"""
         distance = (
             (self.game.player.rect.centerx - self.rect.centerx) ** 2
             + (self.game.player.rect.centery - self.rect.centery) ** 2
@@ -295,7 +296,7 @@ class Boss(pygame.sprite.Sprite):
         self.x_change *= random.randint(5, 15) / 10
         self.y_change *= random.randint(5, 15) / 10
 
-    def register_hit(self, player, damage):
+    def register_hit(self, player, damage: float):
         if player.has_scythe and self not in player.scythe_used_on:
             player.scythe_used_on.append(self)
             damage *= 3
@@ -328,7 +329,7 @@ class Boss(pygame.sprite.Sprite):
                 player.game.healing += min(player.hp - player.current_hp, 10)
                 player.current_hp = min(player.hp, player.current_hp + 10)
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         if self.health != self.start_health:
             new_width: int = self.rect.width * (self.health / self.start_health)
             pygame.draw.rect(
@@ -339,7 +340,8 @@ class Boss(pygame.sprite.Sprite):
             )
         surface.blit(self.image, self.rect, None, 0)
 
-    def calculate_distance(self) -> float:
+    def calculate_distance(self) -> bool:
+        """Returns True if the player is near a boss"""
         distance = (
             (self.game.player.rect.centerx - self.rect.centerx) ** 2
             + (self.game.player.rect.centery - self.rect.centery) ** 2
@@ -367,7 +369,7 @@ class Boss(pygame.sprite.Sprite):
                     else:
                         self.health = min(self.start_health, self.health + self.start_health/5)
                         trigger_multiple_ripples((self.rect.centerx, self.rect.centery))
-                        self.game.player.current_hp -= (self.game.player.hp/10)
+                        self.game.player.take_damage(self.game.player.hp/10)
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
@@ -586,7 +588,7 @@ class Fire(pygame.sprite.Sprite):
             self.last_damage_time = current_time
 
 
-def spawn_fires(game, boss, damage, position, duration=5, size=(48, 48)):
+def spawn_fires(game, boss: Boss, damage: float, position: tuple[int, int], duration=5, size=(48, 48)):
     player_pos = game.player.rect.center
     boss_pos = position
 
@@ -605,7 +607,12 @@ def spawn_fires(game, boss, damage, position, duration=5, size=(48, 48)):
         threading.Thread(target=create_fire, args=(game, fire_position, damage, boss, duration, size, index * 0.02)).start()
 
 
-def generate_fire_positions(start_pos, direction, perpendicular, game):
+def generate_fire_positions(
+    start_pos: tuple[int, int], 
+    direction: pygame.math.Vector2, 
+    perpendicular: pygame.math.Vector2, 
+    game
+) -> list[tuple[float, float]]:
     fire_positions = []
     current_position = pygame.math.Vector2(start_pos[0] + TILE_SIZE / 2, start_pos[1] + TILE_SIZE / 2)
     
@@ -626,7 +633,7 @@ def generate_fire_positions(start_pos, direction, perpendicular, game):
     return fire_positions
 
 
-def create_fire(game, position, damage, boss, duration, size, delay):
+def create_fire(game, position: tuple[int, int], damage: float, boss: Boss, duration: int, size: tuple[int, int], delay: float):
     time.sleep(delay)
     fire = Fire(game, position, damage, boss, duration, size)
     game.ground.add(fire)
@@ -635,7 +642,7 @@ def create_fire(game, position, damage, boss, duration, size, delay):
 ripples = []
 
 
-def trigger_ripple(center, delay=0.):
+def trigger_ripple(center: tuple[int, int], delay=0.):
     def create_ripple():
         time.sleep(delay)
         ripples.append([center, 0, 255])
@@ -661,7 +668,7 @@ def draw_ripples_boss(game):
         ripple[2] = new_alpha
 
 
-def trigger_multiple_ripples(center):
+def trigger_multiple_ripples(center: tuple[int, int]):
     for i in range(3):
         trigger_ripple(center, delay=i * 0.1)
 
@@ -672,7 +679,7 @@ class EnemyState(Enum):
     ATTACKING = 2
     DYING = 3
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name.lower()
 
 
@@ -701,14 +708,14 @@ class BlueBlob(pygame.sprite.Sprite):
 
         self.state = EnemyState.WALKING
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         if self.health != self.start_health and self.state != EnemyState.DYING:
             new_width: int = self.rect.width * (self.health / self.start_health)
             pygame.draw.rect(surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8))
             pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
         surface.blit(self.image, self.rect, None, 0)
 
-    def register_hit(self, player, damage):
+    def register_hit(self, player, damage: float):
         if player.has_scythe and self not in player.scythe_used_on:
             player.scythe_used_on.append(self)
             damage *= 3
@@ -788,7 +795,7 @@ class BlueBlob(pygame.sprite.Sprite):
 
 
 class RedDevil(pygame.sprite.Sprite):
-    def __init__(self, game, position):
+    def __init__(self, game, position: tuple[int, int]):
         self.game = game
         self.x, self.y = position
         pygame.sprite.Sprite.__init__(self, self.game.enemies)
@@ -812,14 +819,14 @@ class RedDevil(pygame.sprite.Sprite):
 
         self.state = EnemyState.STANDING
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         if self.health != self.start_health and self.state != EnemyState.DYING:
             new_width: int = self.rect.width * (self.health / self.start_health)
             pygame.draw.rect(surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8))
             pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
         surface.blit(self.image, self.rect, None, 0)
 
-    def register_hit(self, player, damage):
+    def register_hit(self, player, damage: float):
         if player.has_scythe and self not in player.scythe_used_on:
             player.scythe_used_on.append(self)
             damage *= 3
@@ -870,7 +877,7 @@ class RedDevil(pygame.sprite.Sprite):
 
         self.animate()
 
-    def move(self, player_pos):
+    def move(self, player_pos: tuple[int, int]):
         spd = 1.2
         x_distance = abs(player_pos[0] - self.rect.x)
         if x_distance > TILE_SIZE * 2:
@@ -879,7 +886,7 @@ class RedDevil(pygame.sprite.Sprite):
         self.y_change += (spd if player_pos[1] > self.rect.y else -spd if player_pos[1] < self.rect.y else 0)
         self.y_change *= random.randint(5, 15) / 10
 
-    def near_player(self, player_pos):
+    def near_player(self, player_pos) -> bool:
         return abs(player_pos[0] - self.rect.x) <= 4*TILE_SIZE and abs(player_pos[1] - self.rect.y) <= 0.3*TILE_SIZE
 
     def attack(self, is_near_player):
@@ -961,7 +968,7 @@ class Projectile(pygame.sprite.Sprite):
         self.image = self.images[5]
         self.animation_pos = 6
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         position = [self.rect.x, self.rect.y - self.image.get_rect().height // 2 + 1]
         if self.direction == "right":
             position[0] += 3 - self.image.get_rect().width

@@ -6,17 +6,17 @@ from player_info import (ITEM_INFO_HEIGHT, ITEM_INFO_WIDTH,
 from items import Item, Potion
 
 
-def load_font(size):
+def load_font(size: int):
     return pygame.font.Font(None, size)
 
-def render_text(font, text, color):
+def render_text(font, text: str, color):
     return font.render(text, True, color)
 
 def load_and_scale_image(image_path, size):
     image = pygame.image.load(image_path)
     return pygame.transform.scale(image, size)
 
-def draw_item_attributes(font, surface, item, y_offset):
+def draw_item_attributes(font, surface: pygame.Surface, item: Item, y_offset: int) -> int:
     attributes = ["attack", "hp", "defense", "range", "attack_speed", "movement_speed"]
     for attribute in attributes:
         if getattr(item, attribute) != 0:
@@ -25,7 +25,7 @@ def draw_item_attributes(font, surface, item, y_offset):
             y_offset += text.get_height()
     return y_offset
 
-def draw_description(font, surface, description_lines, y_offset):
+def draw_description(font, surface: pygame.Surface, description_lines: list[str], y_offset: int) -> int:
     description_text = render_text(font, "Description:", (0, 0, 0))
     surface.blit(description_text, (10, y_offset + 10))
     y_offset += 30
@@ -35,7 +35,7 @@ def draw_description(font, surface, description_lines, y_offset):
         y_offset += text_surface.get_height()
     return y_offset
 
-def create_button_surface(font, item, player_gold):
+def create_button_surface(font, item: Item, player_gold: int) -> pygame.Surface:
     button_surface = create_rounded_surface(180, 50, (0, 160, 0), radius=10)
     if player_gold < item.price:
         button_surface.fill((160, 0, 0))
@@ -44,14 +44,14 @@ def create_button_surface(font, item, player_gold):
     button_surface.blit(purchase_text, text_rect)
     return button_surface
 
-def draw_item_details(screen, font, rounded_surface, item, y_offset):
+def draw_item_details(screen, font, rounded_surface: pygame.Surface, item: Item, y_offset: int) -> int:
     description_lines = item.description.split("\n")
     y_offset = draw_item_attributes(font, rounded_surface, item, y_offset)
     y_offset = max(y_offset, 100)
     y_offset = draw_description(font, rounded_surface, description_lines, y_offset)
     return y_offset
 
-def display_item(screen, item, player_gold, font, rounded_surface, rounded_surface_rect):
+def display_item(screen, item, player_gold: int, font, rounded_surface: pygame.Surface, rounded_surface_rect: tuple[int,int]) -> pygame.Surface:
     y_offset = 10
     name_text = render_text(load_font(30), item.name, (0, 0, 0))
     rounded_surface.blit(name_text, (10, y_offset))
@@ -73,7 +73,7 @@ def display_item(screen, item, player_gold, font, rounded_surface, rounded_surfa
 
     return button_surface
 
-def display_potion_details(screen, item, player_gold, font, rounded_surface, rounded_surface_rect):
+def display_potion_details(screen, item: Potion, player_gold: int, font, rounded_surface: pygame.Surface, rounded_surface_rect: tuple[int,int]) -> pygame.Surface:
     y_offset = 10
     name_text = render_text(load_font(30), item.name, (0, 0, 0))
     rounded_surface.blit(name_text, (10, y_offset))
@@ -105,7 +105,6 @@ def display_shop_item(game_, shop_item):
     item = shop_item.item
     screen = game_.screen
 
-    font_large = load_font(32)
     font_small = load_font(24)
 
     rounded_surface = create_rounded_surface(

@@ -230,8 +230,8 @@ class Game:
             stats = [
                 f"Enemies killed: {self.enemies_killed}",
                 f"Gold earned: {self.gold_earned}",
-                f"Damage dealt: {self.damage_dealt}",
-                f"Healing done: {self.healing}",
+                f"Damage dealt: {round(self.damage_dealt)}",
+                f"Healing done: {round(self.healing)}",
                 f"Bullets shot: {self.bullets_shot}",
                 f"Items bought: {self.items_bought}",
                 f"Potions used: {self.potions_used}",
