@@ -13,18 +13,21 @@ def build_tile(game, tile: list[list[int]]) -> None:
             if elem == ".":
                 Ground(game, j, i)
             elif elem == "B" or elem == "P":
-                Wall(game, j, i)
+                if i == 0 or i == len(tile) - 1 or j == 0 or j == len(row) - 1:
+                    Wall(game, j, i, breakable=False)
+                else:
+                    Wall(game, j, i, breakable=True)
             elif elem == "I":
                 ShopItem(game, j, i)
             elif elem == "M":
                 Ground(game, j, i)
                 number = random.randint(1, 10)
-                if number < 5:    # 40 %
-                    Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
-                elif number < 8:  # 30 %
-                    BlueBlob(game, (j * TILE_SIZE, i * TILE_SIZE))
-                else:
+                if number < 4:    # 30 %
                     RedDevil(game, (j * TILE_SIZE, i * TILE_SIZE))
+                elif number < 7:  # 30 %
+                    BlueBlob(game, (j * TILE_SIZE, i * TILE_SIZE))
+                else:             # 40 %
+                    Spider(game, (j * TILE_SIZE, i * TILE_SIZE))
             elif elem == "E":
                 Ground(game, j, i)
                 Boss(game, (j * TILE_SIZE, i * TILE_SIZE))

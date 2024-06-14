@@ -36,9 +36,7 @@ def generate_map() -> tuple[list[list[int]], tuple[int, int], tuple[int, int]]:
                 map[curr_location[0]][curr_location[1]] = 1.2  # shop
                 shops += 1
         if i == 30 and shops == 0:
-            map[curr_location[0]][
-                curr_location[1]
-            ] = 1.2  # pity shop so that there is at least 1
+            map[curr_location[0]][curr_location[1]] = 1.2  # pity shop so that there is at least 1
     map[curr_location[0]][curr_location[1]] = 2
     map[50][50] = 3
 

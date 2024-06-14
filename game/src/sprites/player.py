@@ -79,10 +79,10 @@ class Player(pygame.sprite.Sprite):
 
         self.x += self.x_change
         self.rect.x = self.x
-        collide_blocks(self, "x")
+        handle_player_collision(self, "x")
         self.y += self.y_change
         self.rect.y = self.y
-        collide_blocks(self, "y")
+        handle_player_collision(self, "y")
         self.x_change, self.y_change = 0, 0
 
         self.last_shooting += 1
@@ -199,7 +199,7 @@ def get_clicked_inventory_slot(mouse_pos) -> int or None:
     return None
 
 
-def collide_blocks(sprite, direction):
+def handle_player_collision(sprite, direction):
     has_wings = getattr(sprite, "has_wings", False)
 
     if not has_wings or (

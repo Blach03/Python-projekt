@@ -5,8 +5,57 @@ import pygame
 from enum import Enum
 
 from player_info import trigger_ripple
-from sprites.player import collide_blocks
-from config import TILE_SIZE
+from sprites.player import handle_collision
+from config import TILE_SIZE, WIN_WIDTH
+
+from game.src.sprites.blocks import Ground
+
+
+def register_hit(enemy, player, damage: float):
+    if player.has_scythe and enemy not in player.scythe_used_on:
+        player.scythe_used_on.append(enemy)
+        damage *= 3
+    if player.has_polearm and random.randint(1, 10) < 4:
+        damage *= 2
+    if player.has_edge and player.current_hp > enemy.health:
+        damage *= 1.25
+    if player.has_wyrmblade:
+        damage += enemy.health / 20
+    if player.has_soulthirster:
+        player.current_hp = min(player.hp, player.current_hp + damage / 20)
+
+    enemy.health -= damage
+    enemy.game.damage_dealt += damage
+
+    if enemy.health <= 0:
+        enemy.register_death()
+        enemy.game.enemies_killed += 1
+        enemy.game.player.gold += enemy.game.data.spider.get("gold")
+        enemy.game.gold_earned += enemy.game.data.spider.get("gold")
+        if player.has_heartguard:
+            player.hp += 1
+        if player.has_amulet:
+            player.current_hp = min(player.hp, player.current_hp + 10)
+
+
+def draw_enemy(enemy, surface: pygame.Surface):
+    if enemy.health != enemy.start_health:
+        new_width: int = enemy.rect.width * (enemy.health / enemy.start_health)
+        pygame.draw.rect(surface, (180, 0, 0), (enemy.rect.x, enemy.rect.y - 8, enemy.rect.width, 8))
+        pygame.draw.rect(surface, (0, 180, 0), (enemy.rect.x, enemy.rect.y - 8, new_width, 8))
+    surface.blit(enemy.image, enemy.rect, None, 0)
+
+
+def register_movement(enemy, collision):
+    enemy.x += enemy.x_change
+    enemy.rect.x = enemy.x
+    if collision:
+        handle_collision(enemy, "x")
+    enemy.y += enemy.y_change
+    enemy.rect.y = enemy.y
+    if collision:
+        handle_collision(enemy, "y")
+    enemy.x_change, enemy.y_change = 0, 0
 
 
 class Spider(pygame.sprite.Sprite):
@@ -21,7 +70,7 @@ class Spider(pygame.sprite.Sprite):
 
         self.x_change, self.y_change = 0, 0
         self.start_health = (
-            self.game.data.spider.get("start_health") * self.game.difficulty
+                self.game.data.spider.get("start_health") * self.game.difficulty
         )
         self.health = self.start_health
         self.facing = "right"
@@ -43,13 +92,7 @@ class Spider(pygame.sprite.Sprite):
         self.damage_cooldown += 1
         self.animation_loop += 1
 
-        self.x += self.x_change
-        self.rect.x = self.x
-        collide_blocks(self, "x")
-        self.y += self.y_change
-        self.rect.y = self.y
-        collide_blocks(self, "y")
-        self.x_change, self.y_change = 0, 0
+        register_movement(self, collision=True)
 
     def move(self):
         player_pos = self.game.player.rect.x, self.game.player.rect.y
@@ -73,53 +116,20 @@ class Spider(pygame.sprite.Sprite):
         self.y_change *= random.randint(5, 15) / 10
 
     def register_hit(self, player, damage: float):
-        if player.has_scythe and self not in player.scythe_used_on:
-            player.scythe_used_on.append(self)
-            damage *= 3
+        register_hit(self, player, damage)
 
-        if player.has_polearm and random.randint(1, 10) < 4:
-            damage *= 2
-
-        if player.has_edge and player.current_hp > self.health:
-            damage *= 1.25
-
-        if player.has_wyrmblade:
-            damage += self.health / 20
-
-        if player.has_soulthirster:
-            player.current_hp = min(player.hp, player.current_hp + damage / 20)
-
-        self.health -= damage
-        self.game.damage_dealt += damage
-
-        if self.health <= 0:
-            self.kill()
-            self.game.enemies_killed += 1
-            self.game.player.gold += self.game.data.spider.get("gold")
-            self.game.gold_earned += self.game.data.spider.get("gold")
-
-            if player.has_heartguard:
-                player.hp += 1
-            if player.has_amulet:
-                player.current_hp = min(player.hp, player.current_hp + 10)
+    def register_death(self):
+        self.kill()
 
     def draw(self, surface: pygame.Surface):
-        if self.health != self.start_health:
-            new_width: int = self.rect.width * (self.health / self.start_health)
-            pygame.draw.rect(
-                surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8)
-            )
-            pygame.draw.rect(
-                surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8)
-            )
-        surface.blit(self.image, self.rect, None, 0)
+        draw_enemy(self, surface)
 
     def calculate_distance(self) -> bool:
         """Returns True if the player is near a spider"""
         distance = (
-            (self.game.player.rect.centerx - self.rect.centerx) ** 2
-            + (self.game.player.rect.centery - self.rect.centery) ** 2
-        ) ** 0.5
+                           (self.game.player.rect.centerx - self.rect.centerx) ** 2
+                           + (self.game.player.rect.centery - self.rect.centery) ** 2
+                   ) ** 0.5
         return distance < 100
 
     def damage_player(self):
@@ -129,7 +139,6 @@ class Spider(pygame.sprite.Sprite):
             self.animation_pos = 0
 
     def animate(self) -> None:
-
         if self.shooting:
             if self.animation_loop >= 10:
                 self.animation_loop = 1
@@ -139,45 +148,24 @@ class Spider(pygame.sprite.Sprite):
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
-                self.image = (
-                    self.game.data.spider.get("attacking")[self.animation_pos]
-                    if self.facing == "left"
-                    else pygame.transform.flip(
-                        self.game.data.spider.get("attacking")[self.animation_pos],
-                        True,
-                        False,
-                    )
-                )
+                self.image = self.game.data.spider.get("attacking")[self.animation_pos] if self.facing == "left" else \
+                    pygame.transform.flip(self.game.data.spider.get("attacking")[self.animation_pos], True, False)
         elif (self.x_change == 0 and self.y_change == 0) or self.damage_cooldown < 120:
             if self.animation_loop >= 10:
                 self.animation_loop = 1
                 self.animation_pos += 1
                 if self.animation_pos >= len(self.game.data.spider.get("standing")):
                     self.animation_pos = 0
-            self.image = (
-                self.game.data.spider.get("standing")[self.animation_pos]
-                if self.facing == "left"
-                else pygame.transform.flip(
-                    self.game.data.spider.get("standing")[self.animation_pos],
-                    True,
-                    False,
-                )
-            )
+            self.image = self.game.data.spider.get("standing")[self.animation_pos] if self.facing == "left" else \
+                pygame.transform.flip(self.game.data.spider.get("standing")[self.animation_pos], True, False)
         else:
             if self.animation_loop >= 10:
                 self.animation_loop = 1
                 self.animation_pos += 1
                 if self.animation_pos >= len(self.game.data.spider.get("walking")):
                     self.animation_pos = 0
-                self.image = (
-                    self.game.data.spider.get("walking")[self.animation_pos]
-                    if self.facing == "left"
-                    else pygame.transform.flip(
-                        self.game.data.spider.get("walking")[self.animation_pos],
-                        True,
-                        False,
-                    )
-                )
+                self.image = self.game.data.spider.get("walking")[self.animation_pos] if self.facing == "left" else \
+                    pygame.transform.flip(self.game.data.spider.get("walking")[self.animation_pos], True, False)
 
 
 class CobWeb(pygame.sprite.Sprite):
@@ -209,14 +197,14 @@ class CobWeb(pygame.sprite.Sprite):
                 if pygame.sprite.collide_rect(self, self.game.player):
                     room = self.game.player.get_room()
                     if (
-                        room not in self.game.player.shield_used_rooms
-                        and self.game.player.has_shield
+                            room not in self.game.player.shield_used_rooms
+                            and self.game.player.has_shield
                     ):
                         self.game.player.shield_used_rooms.append(room)
                     else:
                         if (
-                            not self.game.player.has_phantom
-                            or random.randint(1, 5) != 1
+                                not self.game.player.has_phantom
+                                or random.randint(1, 5) != 1
                         ):
                             self.game.player.take_damage(self.damage)
                     if self.game.player.has_thornforge:
@@ -234,7 +222,6 @@ class CobWeb(pygame.sprite.Sprite):
             self.image = self.game.data.spider.get("web")[self.animation_pos // 2]
             self.rect.x += self.h_x
             self.rect.y += self.h_y
-
 
 
 class Boss(pygame.sprite.Sprite):
@@ -273,13 +260,7 @@ class Boss(pygame.sprite.Sprite):
             self.damage_cooldown += 1
             self.animation_loop += 1
 
-            self.x += self.x_change
-            self.rect.x = self.x
-            collide_blocks(self, "x")
-            self.y += self.y_change
-            self.rect.y = self.y
-            collide_blocks(self, "y")
-            self.x_change, self.y_change = 0, 0
+            register_movement(self, collision=False)
         else:
             self.animate_death()
 
@@ -330,22 +311,14 @@ class Boss(pygame.sprite.Sprite):
                 player.current_hp = min(player.hp, player.current_hp + 10)
 
     def draw(self, surface: pygame.Surface):
-        if self.health != self.start_health:
-            new_width: int = self.rect.width * (self.health / self.start_health)
-            pygame.draw.rect(
-                surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8)
-            )
-            pygame.draw.rect(
-                surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8)
-            )
-        surface.blit(self.image, self.rect, None, 0)
+        draw_enemy(self, surface)
 
     def calculate_distance(self) -> bool:
         """Returns True if the player is near a boss"""
         distance = (
-            (self.game.player.rect.centerx - self.rect.centerx) ** 2
-            + (self.game.player.rect.centery - self.rect.centery) ** 2
-        ) ** 0.5
+                           (self.game.player.rect.centerx - self.rect.centerx) ** 2
+                           + (self.game.player.rect.centery - self.rect.centery) ** 2
+                   ) ** 0.5
         return distance < 500
 
     def damage_player(self):
@@ -360,16 +333,16 @@ class Boss(pygame.sprite.Sprite):
                 self.animation_loop = 1
                 self.animation_pos += 1
                 if self.animation_pos >= len(self.game.data.boss.get("attacking")):
-                    x = random.randint(0,2)
+                    x = random.randint(0, 2)
                     if x == 0:
                         spawn_fires(self.game, self, self.damage, (self.rect.centerx, self.rect.centery))
                     elif x == 1:
                         Ball(self.game, (self.x + 32, self.y + 32), self.damage, self)
                         self.spawn_balls()
                     else:
-                        self.health = min(self.start_health, self.health + self.start_health/5)
+                        self.health = min(self.start_health, self.health + self.start_health / 5)
                         trigger_multiple_ripples((self.rect.centerx, self.rect.centery))
-                        self.game.player.take_damage(self.game.player.hp/10)
+                        self.game.player.take_damage(self.game.player.hp / 10)
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
@@ -435,8 +408,6 @@ class Boss(pygame.sprite.Sprite):
         threading.Thread(target=create_ball, args=(1.6,)).start()
 
 
-
-
 class Ball(pygame.sprite.Sprite):
     def __init__(self, game, position, damage, boss, speed=0.2, size=(64, 64)):
         self.game = game
@@ -486,14 +457,14 @@ class Ball(pygame.sprite.Sprite):
         if pygame.sprite.collide_rect(self, self.game.player):
             room = self.game.player.get_room()
             if (
-                room not in self.game.player.shield_used_rooms
-                and self.game.player.has_shield
+                    room not in self.game.player.shield_used_rooms
+                    and self.game.player.has_shield
             ):
                 self.game.player.shield_used_rooms.append(room)
             else:
                 if (
-                    not self.game.player.has_phantom
-                    or random.randint(1, 5) != 1
+                        not self.game.player.has_phantom
+                        or random.randint(1, 5) != 1
                 ):
                     self.game.player.take_damage(self.damage)
             if self.game.player.has_thornforge:
@@ -508,8 +479,8 @@ class Ball(pygame.sprite.Sprite):
                         enemy.register_hit(self.game.player, self.damage * 5)
             self.kill()
 
-        if (self.rect.x < 0 or self.rect.x > self.game.screen.get_width() or 
-            self.rect.y < 0 or self.rect.y > self.game.screen.get_height()):
+        if (self.rect.x < 0 or self.rect.x > self.game.screen.get_width() or
+                self.rect.y < 0 or self.rect.y > self.game.screen.get_height()):
             self.kill()
 
 
@@ -565,14 +536,14 @@ class Fire(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(self, self.game.player):
                 room = self.game.player.get_room()
                 if (
-                    room not in self.game.player.shield_used_rooms
-                    and self.game.player.has_shield
+                        room not in self.game.player.shield_used_rooms
+                        and self.game.player.has_shield
                 ):
                     self.game.player.shield_used_rooms.append(room)
                 else:
                     if (
-                        not self.game.player.has_phantom
-                        or random.randint(1, 5) != 1
+                            not self.game.player.has_phantom
+                            or random.randint(1, 5) != 1
                     ):
                         self.game.player.take_damage(self.damage)
                 if self.game.player.has_thornforge:
@@ -593,47 +564,49 @@ def spawn_fires(game, boss: Boss, damage: float, position: tuple[int, int], dura
     boss_pos = position
 
     direction = pygame.math.Vector2(player_pos[0] - boss_pos[0], player_pos[1] - boss_pos[1]).normalize()
-    
+
     opposite_direction = -direction
-    
+
     perpendicular = pygame.math.Vector2(-direction.y, direction.x) * TILE_SIZE
 
     fire_positions = generate_fire_positions(boss_pos, direction, perpendicular, game)
-    
+
     opposite_fire_positions = generate_fire_positions(boss_pos, opposite_direction, perpendicular, game)
-    
+
     positions = fire_positions + opposite_fire_positions
     for index, fire_position in enumerate(positions):
-        threading.Thread(target=create_fire, args=(game, fire_position, damage, boss, duration, size, index * 0.02)).start()
+        threading.Thread(target=create_fire,
+                         args=(game, fire_position, damage, boss, duration, size, index * 0.02)).start()
 
 
 def generate_fire_positions(
-    start_pos: tuple[int, int], 
-    direction: pygame.math.Vector2, 
-    perpendicular: pygame.math.Vector2, 
-    game
+        start_pos: tuple[int, int],
+        direction: pygame.math.Vector2,
+        perpendicular: pygame.math.Vector2,
+        game
 ) -> list[tuple[float, float]]:
     fire_positions = []
     current_position = pygame.math.Vector2(start_pos[0] + TILE_SIZE / 2, start_pos[1] + TILE_SIZE / 2)
-    
+
     fire_positions.append((current_position.x, current_position.y))
     fire_positions.append((current_position.x + perpendicular.x, current_position.y + perpendicular.y))
     fire_positions.append((current_position.x - perpendicular.x, current_position.y - perpendicular.y))
-    
+
     while True:
         current_position += direction * TILE_SIZE
         fire_positions.append((current_position.x, current_position.y))
         fire_positions.append((current_position.x + perpendicular.x, current_position.y + perpendicular.y))
         fire_positions.append((current_position.x - perpendicular.x, current_position.y - perpendicular.y))
 
-        if (current_position.x < 0 or current_position.x > game.screen.get_width() or 
-            current_position.y < 0 or current_position.y > game.screen.get_height()):
+        if (current_position.x < 0 or current_position.x > game.screen.get_width() or
+                current_position.y < 0 or current_position.y > game.screen.get_height()):
             break
-    
+
     return fire_positions
 
 
-def create_fire(game, position: tuple[int, int], damage: float, boss: Boss, duration: int, size: tuple[int, int], delay: float):
+def create_fire(game, position: tuple[int, int], damage: float, boss: Boss, duration: int, size: tuple[int, int],
+                delay: float):
     time.sleep(delay)
     fire = Fire(game, position, damage, boss, duration, size)
     game.ground.add(fire)
@@ -661,7 +634,7 @@ def draw_ripples_boss(game):
         surface = pygame.Surface((new_radius * 2, new_radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(
             surface, (255, 165, 0, new_alpha), (new_radius, new_radius), new_radius
-        ) 
+        )
         surface_rect = surface.get_rect(center=ripple[0])
         game.screen.blit(surface, surface_rect)
         ripple[1] = new_radius
@@ -708,42 +681,17 @@ class BlueBlob(pygame.sprite.Sprite):
 
         self.state = EnemyState.WALKING
 
-    def draw(self, surface: pygame.Surface):
-        if self.health != self.start_health and self.state != EnemyState.DYING:
-            new_width: int = self.rect.width * (self.health / self.start_health)
-            pygame.draw.rect(surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8))
-            pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
-        surface.blit(self.image, self.rect, None, 0)
-
     def register_hit(self, player, damage: float):
-        if player.has_scythe and self not in player.scythe_used_on:
-            player.scythe_used_on.append(self)
-            damage *= 3
-        if player.has_polearm and random.randint(1, 10) < 4:
-            damage *= 2
-        if player.has_edge and player.current_hp > self.health:
-            damage *= 1.25
-        if player.has_wyrmblade:
-            damage += self.health / 20
-        if player.has_soulthirster:
-            player.current_hp = min(player.hp, player.current_hp + damage / 20)
+        if not self.state == EnemyState.DYING:
+            register_hit(self, player, damage)
 
-        self.health -= damage
-        self.game.damage_dealt += damage
+    def register_death(self):
+        self.state = EnemyState.DYING
+        self.animation_pos = 0
+        self.animation_frequency = 2
 
-        if self.health <= 0:
-            self.state = EnemyState.DYING
-
-            self.animation_pos = 0
-            self.animation_frequency = 2
-            self.game.enemies_killed += 1
-            self.game.player.gold += self.data.get("gold")
-            self.game.gold_earned += self.data.get("gold")
-
-            if player.has_heartguard:
-                player.hp += 1
-            if player.has_amulet:
-                player.current_hp = min(player.hp, player.current_hp + 10)
+    def draw(self, surface: pygame.Surface):
+        draw_enemy(self, surface)
 
     def update(self):
         if self.state == EnemyState.WALKING:
@@ -751,11 +699,7 @@ class BlueBlob(pygame.sprite.Sprite):
         self.attack()
         self.animate()
 
-        self.x += self.x_change
-        self.rect.x = self.x
-        self.y += self.y_change
-        self.rect.y = self.y
-        self.x_change, self.y_change = 0, 0
+        register_movement(self, collision=False)
 
     def move(self):
         player_pos = self.game.player.rect.x, self.game.player.rect.y
@@ -819,40 +763,16 @@ class RedDevil(pygame.sprite.Sprite):
 
         self.state = EnemyState.STANDING
 
-    def draw(self, surface: pygame.Surface):
-        if self.health != self.start_health and self.state != EnemyState.DYING:
-            new_width: int = self.rect.width * (self.health / self.start_health)
-            pygame.draw.rect(surface, (180, 0, 0), (self.rect.x, self.rect.y - 8, self.rect.width, 8))
-            pygame.draw.rect(surface, (0, 180, 0), (self.rect.x, self.rect.y - 8, new_width, 8))
-        surface.blit(self.image, self.rect, None, 0)
-
     def register_hit(self, player, damage: float):
-        if player.has_scythe and self not in player.scythe_used_on:
-            player.scythe_used_on.append(self)
-            damage *= 3
-        if player.has_polearm and random.randint(1, 10) < 4:
-            damage *= 2
-        if player.has_edge and player.current_hp > self.health:
-            damage *= 1.25
-        if player.has_wyrmblade:
-            damage += self.health / 20
-        if player.has_soulthirster:
-            player.current_hp = min(player.hp, player.current_hp + damage / 20)
+        if not self.state == EnemyState.DYING:
+            register_hit(self, player, damage)
 
-        self.health -= damage
-        self.game.damage_dealt += damage
+    def register_death(self):
+        self.state = EnemyState.DYING
+        self.animation_pos = 0
 
-        if self.health <= 0:
-            self.state = EnemyState.DYING
-            self.animation_pos = 0
-            self.game.enemies_killed += 1
-            self.game.player.gold += self.data.get("gold")
-            self.game.gold_earned += self.data.get("gold")
-
-            if player.has_heartguard:
-                player.hp += 1
-            if player.has_amulet:
-                player.current_hp = min(player.hp, player.current_hp + 10)
+    def draw(self, surface: pygame.Surface):
+        draw_enemy(self, surface)
 
     def update(self):
         if self.state != EnemyState.DYING:
@@ -865,13 +785,7 @@ class RedDevil(pygame.sprite.Sprite):
                 self.move(player_pos)
             self.facing = "right" if player_pos[0] > self.rect.x else "left"
 
-            self.x += self.x_change
-            self.rect.x = self.x
-            collide_blocks(self, "x")
-            self.y += self.y_change
-            self.rect.y = self.y
-            collide_blocks(self, "y")
-            self.x_change, self.y_change = 0, 0
+            register_movement(self, collision=True)
 
             self.attack(is_near_player)
 
@@ -887,7 +801,7 @@ class RedDevil(pygame.sprite.Sprite):
         self.y_change *= random.randint(5, 15) / 10
 
     def near_player(self, player_pos) -> bool:
-        return abs(player_pos[0] - self.rect.x) <= 4*TILE_SIZE and abs(player_pos[1] - self.rect.y) <= 0.3*TILE_SIZE
+        return abs(player_pos[0] - self.rect.x) <= 4 * TILE_SIZE and abs(player_pos[1] - self.rect.y) <= 0.3 * TILE_SIZE
 
     def attack(self, is_near_player):
         self.damage_cooldown += 1
@@ -937,7 +851,7 @@ class Projectile(pygame.sprite.Sprite):
     def update(self):
         self.animation_loop += 1
         if not self.exploding:
-            self.rect.x += 2 if self.direction == "right" else -2
+            self.rect.x += 3 if self.direction == "right" else -3
             if self.animation_loop > 10:
                 self.animation_loop = 1
                 self.animation_pos += 1
@@ -952,20 +866,25 @@ class Projectile(pygame.sprite.Sprite):
                 self.kill()
             hits = pygame.sprite.spritecollide(self, self.game.walls, False)
             if hits:
+                if hits[0].breakable:
+                    hits[0].kill()
+                    Ground(self.game, hits[0].rect.x // TILE_SIZE, hits[0].rect.y // TILE_SIZE)
                 self.explode()
         else:
             if self.animation_loop > 10:
                 if self.animation_pos >= 7:
                     self.kill()
                     return
-                self.image = self.images[6]
+                self.image = self.images[6] if self.direction == "right" \
+                    else pygame.transform.flip(self.images[6], True, False)
                 self.animation_loop = 1
                 self.animation_pos += 1
 
     def explode(self):
         self.exploding = True
         self.animation_loop = 1
-        self.image = self.images[5]
+        self.image = self.images[5] if self.direction == "right" \
+            else pygame.transform.flip(self.images[5], True, False)
         self.animation_pos = 6
 
     def draw(self, surface: pygame.Surface):

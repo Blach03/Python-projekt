@@ -1,6 +1,6 @@
 import pygame
 from config import *
-from items import Item, Potion
+from items import Potion
 
 
 def draw_player_info(game):
@@ -83,12 +83,12 @@ def draw_segment_bar(surface: pygame.Surface, position: tuple[int, int], percent
         )
 
 
-
 def draw_inventory_grid(surface: pygame.Surface, position: tuple[int, int], player):
     x, y = position
     draw_grid_background(surface, x, y)
     draw_grid_items(surface, x, y, player)
     draw_grid_potions(surface, x, y, player)
+
 
 def draw_grid_background(surface: pygame.Surface, x: int, y: int):
     for row in range(GRID_HEIGHT):
@@ -96,6 +96,7 @@ def draw_grid_background(surface: pygame.Surface, x: int, y: int):
             draw_grid_cell(surface, (179, 179, 0, 230), x, y, row, col)
         for col in range(GRID_WIDTH - 2, GRID_WIDTH):
             draw_grid_cell(surface, (160, 160, 0, 230), x, y, row, col)
+
 
 def draw_grid_cell(surface: pygame.Surface, color, x: int, y: int, row: int, col: int):
     pygame.draw.rect(
@@ -109,28 +110,33 @@ def draw_grid_cell(surface: pygame.Surface, color, x: int, y: int, row: int, col
         ),
     )
 
+
 def draw_grid_items(surface: pygame.Surface, x: int, y: int, player):
     for item_index, item in enumerate(player.items):
-        if hasattr(item, "image"):
-            item_image = load_and_scale_image(item.image, GRID_CELL_SIZE)
-            item_row = item_index // (GRID_WIDTH - 2)
-            item_col = item_index % (GRID_WIDTH - 2)
-            item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
-            item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
-            surface.blit(item_image, (item_x, item_y))
+        item_row = item_index // (GRID_WIDTH - 2)
+        item_col = item_index % (GRID_WIDTH - 2)
+        item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
+        item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
+        surface.blit(load_and_scale_image(item.image, GRID_CELL_SIZE), (item_x, item_y))
+
 
 def draw_grid_potions(surface: pygame.Surface, x: int, y: int, player):
     for item_index, potion in enumerate(player.potions):
-        potion_image = load_and_scale_image(potion.image, GRID_CELL_SIZE)
         item_row = item_index // 2
         item_col = (item_index % 2) + GRID_WIDTH - 2
         item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
         item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
-        surface.blit(potion_image, (item_x, item_y))
+        surface.blit(load_and_scale_image(potion, GRID_CELL_SIZE), (item_x, item_y))
 
-def load_and_scale_image(image_path, size: int):
-    image = pygame.image.load(image_path)
-    return pygame.transform.scale(image, (size, size))
+
+def load_and_scale_image(item, size: int):
+    if item.ready_image is None:
+        item.ready_image = pygame.transform.scale(pygame.image.load(item.image), (size, size))
+    if item.ready_image.get_width() != size:
+        return pygame.transform.scale(item.ready_image, (size, size))
+    else:
+        return item.ready_image
+
 
 def create_rounded_surface(width: int, height: int, color, radius: int) -> pygame.Surface:
     surface = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -138,20 +144,19 @@ def create_rounded_surface(width: int, height: int, color, radius: int) -> pygam
     pygame.draw.rect(surface, color, rect, border_radius=radius)
     return surface
 
+
 def draw_item(item, screen):
-    rounded_surface, rounded_surface_rect = prepare_item_surface(item)
+    rounded_surface, rounded_surface_rect = prepare_item_surface()
     draw_item_details(item, rounded_surface)
-    screen.blit(*prepare_border_surface(rounded_surface, rounded_surface_rect))
+    screen.blit(*prepare_border_surface(rounded_surface))
     screen.blit(rounded_surface, rounded_surface_rect)
 
-def prepare_item_surface(item) -> tuple[pygame.Surface, tuple[int,int]]:
-    rounded_surface = create_rounded_surface(
-        ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10
-    )
-    rounded_surface_rect = rounded_surface.get_rect(
-        center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100)
-    )
+
+def prepare_item_surface() -> tuple[pygame.Surface, pygame.Rect]:
+    rounded_surface = create_rounded_surface(ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10)
+    rounded_surface_rect = rounded_surface.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100))
     return rounded_surface, rounded_surface_rect
+
 
 def draw_item_details(item, surface: pygame.Surface):
     font = pygame.font.Font(None, 32)
@@ -164,10 +169,12 @@ def draw_item_details(item, surface: pygame.Surface):
     draw_item_description(surface, item.description, y_offset)
     draw_item_image(surface, item.image, 10, 10)
 
+
 def draw_text(surface: pygame.Surface, font, text: str, color, x: int, y: int):
     rendered_text = font.render(text, True, color)
     surface.blit(rendered_text, (x, y))
     return rendered_text.get_height()
+
 
 def draw_item_attributes(item, surface: pygame.Surface, y_offset: int) -> int:
     font = pygame.font.Font(None, 24)
@@ -177,16 +184,19 @@ def draw_item_attributes(item, surface: pygame.Surface, y_offset: int) -> int:
             y_offset += draw_text(surface, font, f"{attribute}: {getattr(item, attribute)}", (0, 0, 0), 10, y_offset)
     return y_offset
 
+
 def draw_item_description(surface: pygame.Surface, description: str, y_offset: int):
     font = pygame.font.Font(None, 24)
     for line in description.split("\n"):
         y_offset += draw_text(surface, font, line, (0, 0, 0), 10, y_offset)
 
+
 def draw_item_image(surface: pygame.Surface, image_path, x: int, y: int):
     item_image = load_and_scale_image(image_path, 100)
     surface.blit(item_image, (surface.get_width() - item_image.get_width() - x, y))
 
-def prepare_border_surface(rounded_surface: pygame.Surface, rounded_surface_rect) -> tuple[pygame.Surface, tuple[int,int]]:
+
+def prepare_border_surface(rounded_surface: pygame.Surface) -> tuple[pygame.Surface, tuple[int, int]]:
     border_width = 5
     border_surface = create_rounded_surface(
         rounded_surface.get_width() + 2 * border_width,
@@ -201,21 +211,20 @@ def prepare_border_surface(rounded_surface: pygame.Surface, rounded_surface_rect
     )
     return border_surface, border_position
 
+
 def draw_potion(potion: Potion, screen: pygame.Surface, player):
-    rounded_surface, rounded_surface_rect = prepare_potion_surface(potion)
+    rounded_surface, rounded_surface_rect = prepare_potion_surface()
     draw_potion_details(potion, rounded_surface)
     draw_use_button(potion, rounded_surface, rounded_surface_rect, player)
-    screen.blit(*prepare_border_surface(rounded_surface, rounded_surface_rect))
+    screen.blit(*prepare_border_surface(rounded_surface))
     screen.blit(rounded_surface, rounded_surface_rect)
 
-def prepare_potion_surface(potion) -> tuple[pygame.Surface, tuple[int,int]]:
-    rounded_surface = create_rounded_surface(
-        ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10
-    )
-    rounded_surface_rect = rounded_surface.get_rect(
-        center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100)
-    )
+
+def prepare_potion_surface() -> tuple[pygame.Surface, pygame.Rect]:
+    rounded_surface = create_rounded_surface(ITEM_INFO_WIDTH, ITEM_INFO_HEIGHT, (153, 153, 102), radius=10)
+    rounded_surface_rect = rounded_surface.get_rect(center=(WIN_WIDTH // 2, WIN_HEIGHT // 2 - 100))
     return rounded_surface, rounded_surface_rect
+
 
 def draw_potion_details(potion: Potion, surface: pygame.Surface):
     font = pygame.font.Font(None, 32)
@@ -224,46 +233,39 @@ def draw_potion_details(potion: Potion, surface: pygame.Surface):
     y_offset = max(y_offset, 100)
     draw_text(surface, pygame.font.Font(None, 24), "Description:", (0, 0, 0), 10, y_offset + 10)
     y_offset += 30
-    draw_potion_description(surface, potion.description, y_offset)
-    draw_potion_image(surface, potion.image, 10, 10)
+    draw_item_description(surface, potion.description, y_offset)
+    draw_item_image(surface, potion.image, 10, 10)
 
-def draw_potion_description(surface: pygame.Surface, description: str, y_offset: int):
-    font = pygame.font.Font(None, 24)
-    for line in description.split("\n"):
-        y_offset += draw_text(surface, font, line, (0, 0, 0), 10, y_offset)
 
-def draw_potion_image(surface: pygame.Surface, image_path, x: int, y: int):
-    potion_image = load_and_scale_image(image_path, 100)
-    surface.blit(potion_image, (surface.get_width() - potion_image.get_width() - x, y))
-
-def draw_use_button(potion: Potion, rounded_surface: pygame.Surface, rounded_surface_rect: tuple[int,int], player):
+def draw_use_button(potion: Potion, rounded_surface: pygame.Surface, rounded_surface_rect: pygame.Rect, player):
     button_surface = create_use_button_surface(potion)
     draw_use_button_text(button_surface)
     button_x, button_y = get_button_position(rounded_surface_rect)
     rounded_surface.blit(button_surface, (button_x - rounded_surface_rect.left, button_y - rounded_surface_rect.top))
     button_rect = button_surface.get_rect(topleft=(button_x, button_y))
-    if button_clicked(button_rect, player) and potion.count > 0:
+    if button_clicked(button_rect) and potion.count > 0:
         potion.use(player)
+
 
 def create_use_button_surface(potion: Potion) -> pygame.Surface:
     button_surface = create_rounded_surface(150, 50, (0, 160, 0) if potion.count > 0 else (160, 0, 0), radius=10)
     return button_surface
+
 
 def draw_use_button_text(surface: pygame.Surface):
     font = pygame.font.Font(None, 24)
     use_text = font.render("Use", True, (0, 0, 0))
     surface.blit(use_text, use_text.get_rect(center=surface.get_rect().center))
 
-def get_button_position(rounded_surface_rect: tuple[int,int]) -> tuple[int,int]:
+
+def get_button_position(rounded_surface_rect: pygame.Rect) -> tuple[int, int]:
     button_x = rounded_surface_rect.width - 220
     button_y = rounded_surface_rect.height - 50
     return rounded_surface_rect.left + button_x, rounded_surface_rect.top + button_y
 
 
-
-def button_clicked(button_rect: tuple[int,int], player):
+def button_clicked(button_rect: pygame.Rect):
     return button_rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]
-
 
 
 def draw_item_info(game):
@@ -346,7 +348,7 @@ def draw_circle(game):
 ripples = []
 
 
-def trigger_ripple(center: tuple[int,int]):
+def trigger_ripple(center: tuple[int, int]):
     ripples.append([center, 0, 255])
 
 

@@ -30,6 +30,7 @@ class Item:
         self.range = attack_range
         self.attack_speed = attack_speed
         self.movement_speed = movement_speed
+        self.ready_image = None
 
     @staticmethod
     def from_dict(data):

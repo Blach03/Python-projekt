@@ -1,8 +1,6 @@
 import json
-
 import pygame
 from config import *
-
 
 from items import Potion
 
@@ -131,6 +129,7 @@ class Data:
     def get_red_devil_sprites(self):
         sprite_sheet = SpriteSheet(RED_DEVIL_SPRITE)
         scale = 5.5
+        bullet_scale = 0.7 * scale
         self.red_devil = {
             "start_health": 300,
             "damage": 30,
@@ -148,13 +147,13 @@ class Data:
                 sprite_sheet.get_sprite(i * 32, 43, 15, 13, (7.5 * scale, 6.5 * scale)) for i in range(6)
             ],
             "bullet": [
-                sprite_sheet.get_sprite(6, 62, 1, 1, (0.5 * scale, 0.5 * scale)),
-                sprite_sheet.get_sprite(37, 61, 3, 4, (1.5 * scale, 2 * scale)),
-                sprite_sheet.get_sprite(73, 61, 19, 3, (9.5 * scale, 1.5 * scale)),
-                sprite_sheet.get_sprite(115, 61, 9, 3, (4.5 * scale, 1.5 * scale)),
-                sprite_sheet.get_sprite(151, 61, 5, 3, (2.5 * scale, 1.5 * scale)),
-                sprite_sheet.get_sprite(184, 58, 4, 8, (2 * scale, 4 * scale)),
-                sprite_sheet.get_sprite(220, 58, 4, 10, (2 * scale, 5 * scale)),
+                sprite_sheet.get_sprite(6, 62, 1, 1, (bullet_scale, bullet_scale)),
+                sprite_sheet.get_sprite(37, 61, 3, 4, (3 * bullet_scale, 4 * bullet_scale)),
+                sprite_sheet.get_sprite(73, 61, 19, 3, (19 * bullet_scale, 3 * bullet_scale)),
+                sprite_sheet.get_sprite(115, 61, 9, 3, (9 * bullet_scale, 3 * bullet_scale)),
+                sprite_sheet.get_sprite(151, 61, 5, 3, (5 * bullet_scale, 3 * bullet_scale)),
+                sprite_sheet.get_sprite(184, 58, 4, 8, (4 * bullet_scale, 8 * bullet_scale)),
+                sprite_sheet.get_sprite(220, 58, 4, 10, (4 * bullet_scale, 10 * bullet_scale)),
             ]
         }
 
@@ -177,7 +176,6 @@ class Data:
             ],
         }
 
-
     def get_ball_sprites(self):
         sprite_sheet = SpriteSheet(BOSS_ATTACK_SPRITE)
         self.ball_flying = [
@@ -189,7 +187,6 @@ class Data:
         self.fire = [
             sprite_sheet.get_sprite(352 + i * 32, 224, 32, 32, (32, 32)) for i in range(4)
         ]
-
 
     def get_potion_icons(self):
         start_potions = json.load(open(POTION_DATA))
