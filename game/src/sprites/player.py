@@ -48,7 +48,7 @@ class Player(pygame.sprite.Sprite):
 
         self.current_hp = 100
 
-        self.gold = 1000
+        self.gold = 1_000
 
         self.items = []
         self.potions: list[Potion] = game.data.potions

@@ -117,7 +117,7 @@ def draw_grid_items(surface: pygame.Surface, x: int, y: int, player):
         item_col = item_index % (GRID_WIDTH - 2)
         item_x = x + (GRID_CELL_SIZE + GRID_SPACING) * item_col
         item_y = y + (GRID_CELL_SIZE + GRID_SPACING) * item_row
-        surface.blit(load_and_scale_image(item.image, GRID_CELL_SIZE), (item_x, item_y))
+        surface.blit(load_and_scale_image(item, GRID_CELL_SIZE), (item_x, item_y))
 
 
 def draw_grid_potions(surface: pygame.Surface, x: int, y: int, player):
@@ -167,7 +167,7 @@ def draw_item_details(item, surface: pygame.Surface):
     draw_text(surface, pygame.font.Font(None, 24), "Description:", (0, 0, 0), 10, y_offset + 10)
     y_offset += 30
     draw_item_description(surface, item.description, y_offset)
-    draw_item_image(surface, item.image, 10, 10)
+    draw_item_image(surface, item, 10, 10)
 
 
 def draw_text(surface: pygame.Surface, font, text: str, color, x: int, y: int):
@@ -191,8 +191,8 @@ def draw_item_description(surface: pygame.Surface, description: str, y_offset: i
         y_offset += draw_text(surface, font, line, (0, 0, 0), 10, y_offset)
 
 
-def draw_item_image(surface: pygame.Surface, image_path, x: int, y: int):
-    item_image = load_and_scale_image(image_path, 100)
+def draw_item_image(surface: pygame.Surface, item, x: int, y: int):
+    item_image = load_and_scale_image(item, 100)
     surface.blit(item_image, (surface.get_width() - item_image.get_width() - x, y))
 
 
@@ -234,7 +234,7 @@ def draw_potion_details(potion: Potion, surface: pygame.Surface):
     draw_text(surface, pygame.font.Font(None, 24), "Description:", (0, 0, 0), 10, y_offset + 10)
     y_offset += 30
     draw_item_description(surface, potion.description, y_offset)
-    draw_item_image(surface, potion.image, 10, 10)
+    draw_item_image(surface, potion, 10, 10)
 
 
 def draw_use_button(potion: Potion, rounded_surface: pygame.Surface, rounded_surface_rect: pygame.Rect, player):

@@ -145,6 +145,7 @@ class Spider(pygame.sprite.Sprite):
                 self.animation_pos += 1
                 if self.animation_pos >= len(self.game.data.spider.get("attacking")):
                     CobWeb(self.game, (self.x, self.y), self.damage, self)
+                    self.animation_pos = 0
                     self.damage_cooldown = 1
                     self.shooting = False
                     return
@@ -156,8 +157,9 @@ class Spider(pygame.sprite.Sprite):
                 self.animation_pos += 1
                 if self.animation_pos >= len(self.game.data.spider.get("standing")):
                     self.animation_pos = 0
-            self.image = self.game.data.spider.get("standing")[self.animation_pos] if self.facing == "left" else \
-                pygame.transform.flip(self.game.data.spider.get("standing")[self.animation_pos], True, False)
+            length = len(self.game.data.spider.get("standing"))
+            self.image = self.game.data.spider.get("standing")[self.animation_pos % length] if self.facing == "left" else \
+                pygame.transform.flip(self.game.data.spider.get("standing")[self.animation_pos % length], True, False)
         else:
             if self.animation_loop >= 10:
                 self.animation_loop = 1
