@@ -58,3 +58,12 @@ Boss:
 Statystyki na koniec gry:  
 ![stats](readme_imgs/stats.png)
 
+Na przyszłość:  
+- Pomieszczenia o różnych rozmiarach.
+- Skalowanie rozmiaru okna gry.
+- Zapisywanie i etapy gry.
+- Lepsza sztuczna inteligencja przeciwników.
+- Nowy wygląd gracza.
+- Dodanie broni o różnych szybkościach ataku, damagu (może skończona amunicja).
+- W sumie naprawdę dużo dałoby się dodać. Na pewno jest potencjał do rozwoju. 😃😉👾
+

@@ -7,8 +7,7 @@ from enum import Enum
 from player_info import trigger_ripple
 from sprites.player import handle_collision
 from config import TILE_SIZE, WIN_WIDTH
-
-from game.src.sprites.blocks import Ground
+from sprites.blocks import Ground
 
 
 def register_hit(enemy, player, damage: float):
